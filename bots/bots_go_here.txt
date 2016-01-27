@@ -1,0 +1,2 @@
+Put your bots in this directory with the file extension '.phlang' for them to
+be run in local mode.
