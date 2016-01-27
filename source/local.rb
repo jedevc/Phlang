@@ -14,7 +14,7 @@ def load_local_bots(place="bots", extension="phlang")
 
     bots = []
     bot_sources.each_key do |k|
-        b = PhlangBot.new(k, bot_sources[k])
+        b = PhlangBot.new(k, bot_sources[k], NORMAL_CONFIG)
         bots.push(b)
     end
     return bots

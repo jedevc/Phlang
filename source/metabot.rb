@@ -26,7 +26,7 @@ class MetaBot < Bot
                 elsif cmd == "phlang"
                     nac = /@(\S*) ([\s\S]*)/.match(args)
                     return false if nac == nil
-                    b = PhlangBot.new(nac[1], nac[2], message["sender"]["name"])
+                    b = PhlangBot.new(nac[1], nac[2], ADMIN_CONFIG, message["sender"]["name"])
                     r = Room.new(room.room)
                     b.add_room(r)
 

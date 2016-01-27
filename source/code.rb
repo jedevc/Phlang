@@ -1,5 +1,4 @@
 require_relative 'bot'
-require_relative 'builtin'
 
 require_relative 'botbot_expression'
 
