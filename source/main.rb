@@ -2,6 +2,8 @@ require_relative 'local'
 require_relative 'metabot'
 require_relative 'phlangbotgroup'
 
+require_relative 'botbot_expression'
+
 Thread.abort_on_exception = true
 
 def main(args)

@@ -1,6 +1,8 @@
 require_relative 'bot'
 require_relative 'builtin'
 
+require_relative 'botbot_expression'
+
 class Tokenizer
     attr_reader :tokens
 
@@ -42,7 +44,7 @@ class Trigger
         @trig = trig
         @trig_args = trig_args
         @resp = resp
-        @resp_args = resp_args
+        @resp_args = botbot_expression(resp_args)
     end
 
     def attempt(message, room)
@@ -59,11 +61,20 @@ class Code
     def initialize(raw)
         @raw = raw
 
-        @responses = {"send" => lambda do |args, message, room| room.send_message(args) end,
-                "reply" => lambda do |args, message, room| room.send_message(args, message["id"]) end
-        }
+        @responses = {"send" => lambda do |args, message, room|
+            args.get.each do |a|
+                room.send_message(a)
+            end
+        end,
+        "reply" => lambda do |args, message, room|
+            args.get.each do |a|
+                room.send_message(a, message["id"])
+            end
+        end}
 
-        @triggers = {"msg" => lambda do |args, message, room| return Regexp.new(args).match(message["content"]) end}
+        @triggers = {"msg" => lambda do |args, message, room|
+            return Regexp.new(args).match(message["content"])
+        end}
     end
 
     def parse()
