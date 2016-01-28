@@ -12,13 +12,9 @@ class Bot
     public
     # Add a room to the collection for monitoring
     def add_room(room)
-        if !room.connected
-            room.connect()
-        end
-
         # Add handlers to room
         @handles.each_key do |type|
-            room.onpacket(type, lambda do |packet|
+            room.onpacket(type, lambda do |packet, room|
                 @handles[type].each do |h|
                     if h.call(packet, room); break; end
                 end
@@ -31,19 +27,11 @@ class Bot
 
     # Remove a room from monitoring
     def remove_room(room)
-        if room.connected
-            room.disconnect()
-        end
         @rooms.delete(room)
     end
 
     # Remove all the rooms from monitoring
     def remove_all_rooms()
-        @rooms.each do |r|
-            if r.connected
-                r.disconnect()
-            end
-        end
         @rooms = []
     end
 

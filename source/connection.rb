@@ -8,11 +8,11 @@ end
 
 # Simple connection to euphoria
 class Connection
-    attr_reader :room
+    attr_reader :roomname
     attr_reader :connected
 
     def initialize(room, site="euphoria.io")
-        @room = room
+        @roomname = room
         @connected = false
 
         @thread = nil
@@ -21,39 +21,60 @@ class Connection
         @wsuri = "wss://#{site}/room/#{room}/ws"
         @wscon = nil
 
-        @callbacks = {}
+        @callbacks = []
     end
 
-    protected
+    public
     # Send a Ruby hash through the connection formatted as JSON.
     def send(packet)
         if @connected
             data = JSON.dump(packet)
-            @mutex.lock()
+            @mutex.lock()  # Is this needed?
             @wscon.send(data)
             @mutex.unlock()
         end
         return @connected
     end
 
-    public
     # Initialize the connection
     def connect()
         if @wscon == nil
             @thread = Thread.new do
                 EM.run do
-                    @wscon = WebSocket::EventMachine::Client.connect(:uri => @wsuri)
-
-                    @wscon.onopen do
-                        @connected = true
+                    # Attempt to connect
+                    begin
+                        @wscon = WebSocket::EventMachine::Client.connect(:uri => @wsuri)
+                    rescue
+                        EM.defer do
+                            @callbacks.each do |f|
+                                f.call(nil)
+                            end
+                        end
                     end
 
-                    @wscon.onmessage do |data|
-                        packet = JSON.load(data)
-                        c = @callbacks[packet["type"]]
-                        if c
-                            c.each do |f|
-                                f.call(packet["data"])
+                    if @wscon
+                        @wscon.comm_inactivity_timeout = 60
+
+                        @wscon.onopen do
+                            @connected = true
+                        end
+
+                        @wscon.onmessage do |data|
+                            EM.defer do
+                                packet = JSON.load(data)
+                                @callbacks.each do |f|
+                                    f.call(packet)
+                                end
+                            end
+                        end
+
+                        @wscon.onclose do
+                            if @connected
+                                EM.defer do
+                                    @callbacks.each do |f|
+                                        f.call(nil)
+                                    end
+                                end
                             end
                         end
                     end
@@ -62,19 +83,18 @@ class Connection
         end
     end
 
-    # Add a callback for a packet type
-    def onpacket(t, f)
-        if @callbacks[t] == nil
-            @callbacks[t] = []
-        end
-        @callbacks[t].push(f)
+    # Add a callback
+    def receive(f)
+        @callbacks.push(f)
     end
 
-    # Disconnect - pretty self explanatory
+    # Disconnect from euphoria
     def disconnect()
         @connected = false
         @wscon.close(1000)
 
-        # No need to join thread, as the process will go on forever.
+        if Thread.current != @thread
+            @thread.join()
+        end
     end
 end

@@ -47,15 +47,15 @@ class PhlangBot < Bot
                     trigger("rooms-gone")
                 end
                 return true
-            elsif !@paused.include?(room.room) && /^!pause @#{@name}$/.match(message["content"])
+            elsif !@paused.include?(room) && /^!pause @#{@name}$/.match(message["content"])
                 room.send_message("/me is now paused.", message["id"])
-                @paused.push(room.room)
+                @paused.push(room)
                 return true
-            elsif @paused.include?(room.room) && /^!restore @#{@name}$/.match(message["content"])
+            elsif @paused.include?(room) && /^!restore @#{@name}$/.match(message["content"])
                 room.send_message("/me is now restored.", message["id"])
-                @paused.delete(room.room)
+                @paused.delete(room)
                 return true
-            elsif @paused.include?(room.room)
+            elsif @paused.include?(room)
                 return true
             end
         end)
