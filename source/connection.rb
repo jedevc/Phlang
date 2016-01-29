@@ -24,6 +24,49 @@ class Connection
         @callbacks = []
     end
 
+    private
+    def em_connect()
+        EM.run do
+            # Attempt to connect
+            begin
+                @wscon = WebSocket::EventMachine::Client.connect(:uri => @wsuri)
+            rescue
+                EM.defer do
+                    @callbacks.each do |f|
+                        f.call(nil)
+                    end
+                end
+            end
+
+            if @wscon
+                @wscon.comm_inactivity_timeout = 60
+
+                @wscon.onopen do
+                    @connected = true
+                end
+
+                @wscon.onmessage do |data|
+                    EM.defer do
+                        packet = JSON.load(data)
+                        @callbacks.each do |f|
+                            f.call(packet)
+                        end
+                    end
+                end
+
+                @wscon.onclose do
+                    if @connected
+                        EM.defer do
+                            @callbacks.each do |f|
+                                f.call(nil)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
     public
     # Send a Ruby hash through the connection formatted as JSON.
     def send(packet)
@@ -39,45 +82,11 @@ class Connection
     # Initialize the connection
     def connect()
         if @wscon == nil
-            @thread = Thread.new do
-                EM.run do
-                    # Attempt to connect
-                    begin
-                        @wscon = WebSocket::EventMachine::Client.connect(:uri => @wsuri)
-                    rescue
-                        EM.defer do
-                            @callbacks.each do |f|
-                                f.call(nil)
-                            end
-                        end
-                    end
-
-                    if @wscon
-                        @wscon.comm_inactivity_timeout = 60
-
-                        @wscon.onopen do
-                            @connected = true
-                        end
-
-                        @wscon.onmessage do |data|
-                            EM.defer do
-                                packet = JSON.load(data)
-                                @callbacks.each do |f|
-                                    f.call(packet)
-                                end
-                            end
-                        end
-
-                        @wscon.onclose do
-                            if @connected
-                                EM.defer do
-                                    @callbacks.each do |f|
-                                        f.call(nil)
-                                    end
-                                end
-                            end
-                        end
-                    end
+            if EM.reactor_running?
+                em_connect()
+            else
+                @thread = Thread.new do
+                    em_connect()
                 end
             end
         end
