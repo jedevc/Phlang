@@ -1,27 +1,28 @@
 require 'websocket-eventmachine-client'
 require 'json'
 
+require_relative 'eventgen'
+
 # Create a packet.
 def make_packet(name, data)
     return {"type": name, "data": data}
 end
 
 # Simple connection to euphoria
-class Connection
+class Connection < EventGenerator
     attr_reader :roomname
     attr_reader :connected
 
     def initialize(room, site="euphoria.io")
+        super()
+
         @roomname = room
         @connected = false
 
-        @thread = nil
         @mutex = Mutex.new()
 
         @wsuri = "wss://#{site}/room/#{room}/ws"
         @wscon = nil
-
-        @callbacks = []
     end
 
     private
@@ -32,9 +33,7 @@ class Connection
                 @wscon = WebSocket::EventMachine::Client.connect(:uri => @wsuri)
             rescue
                 EM.defer do
-                    @callbacks.each do |f|
-                        f.call(nil)
-                    end
+                    trigger("closed")
                 end
             end
 
@@ -48,18 +47,14 @@ class Connection
                 @wscon.onmessage do |data|
                     EM.defer do
                         packet = JSON.load(data)
-                        @callbacks.each do |f|
-                            f.call(packet)
-                        end
+                        trigger(packet["type"], packet["data"])
                     end
                 end
 
                 @wscon.onclose do
                     if @connected
                         EM.defer do
-                            @callbacks.each do |f|
-                                f.call(nil)
-                            end
+                            trigger("closed")
                         end
                     end
                 end
@@ -72,7 +67,7 @@ class Connection
     def send(packet)
         if @connected
             data = JSON.dump(packet)
-            @mutex.lock()  # Is this needed?
+            @mutex.lock()
             @wscon.send(data)
             @mutex.unlock()
         end
@@ -80,30 +75,19 @@ class Connection
     end
 
     # Initialize the connection
-    def connect()
-        if @wscon == nil
-            if EM.reactor_running?
-                em_connect()
-            else
-                @thread = Thread.new do
-                    em_connect()
-                end
-            end
-        end
-    end
+    def start()
+        super()
 
-    # Add a callback
-    def receive(f)
-        @callbacks.push(f)
+        if @wscon == nil
+            em_connect()
+        end
     end
 
     # Disconnect from euphoria
-    def disconnect()
+    def stop()
         @connected = false
         @wscon.close(1000)
 
-        if Thread.current != @thread
-            @thread.join()
-        end
+        super()
     end
 end

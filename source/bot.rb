@@ -27,11 +27,15 @@ class Bot
 
     # Remove a room from monitoring
     def remove_room(room)
+        room.disconnect()
         @rooms.delete(room)
     end
 
     # Remove all the rooms from monitoring
     def remove_all_rooms()
+        @rooms.each do |room|
+            room.disconnect()
+        end
         @rooms = []
     end
 

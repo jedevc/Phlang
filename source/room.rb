@@ -5,13 +5,12 @@ class Room
     def initialize(room)
         @nick = ""
 
-        @handlers = {}
-        onpacket("ping-event", lambda do |packet, _| ping_reply(packet) end)
-        onpacket("hello-event", lambda do |packet, _| ready() end)
-
         @conn = nil
         @first_try = true
         connect(room)
+
+        @conn.onevent("ping-event", lambda do |packet| ping_reply(packet) end)
+        @conn.onevent("hello-event", lambda do |packet| ready() end)
     end
 
     private
@@ -19,24 +18,16 @@ class Room
     def connect(room)
         @conn = Connection.new(room)
 
-        @conn.receive(lambda do |packet|
-            if packet
-                if @handlers.has_key?(packet["type"])
-                    @handlers[packet["type"]].each do |h|
-                        h.call(packet["data"], self)
-                    end
-                end
+        @conn.onevent("closed", lambda do |packet|
+            if @first_try
+                @first_try = false
             else
-                if @first_try
-                    @first_try = false
-                else
-                    sleep(10)
-                end
-                connect(room)
+                sleep(10)
             end
+            connect(room)
         end)
 
-        @conn.connect()
+        @conn.start()
     end
 
     # Ping handler
@@ -52,11 +43,7 @@ class Room
     public
     # Add a handler for a packet type
     def onpacket(t, f)
-        if @handlers.has_key?(t)
-            @handlers[t].push(f)
-        else
-            @handlers[t] = [f]
-        end
+        @conn.onevent(t, lambda do |packet| f.call(packet, self) end)
     end
 
     # Identify by a nick in the room
@@ -76,5 +63,11 @@ class Room
 
     def roomname()
         return @conn.roomname
+    end
+
+    def disconnect()
+        if @conn
+            @conn.stop()
+        end
     end
 end
