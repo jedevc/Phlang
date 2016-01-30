@@ -11,13 +11,14 @@ end
 # Simple connection to euphoria
 class Connection < EventGenerator
     attr_reader :roomname
-    attr_reader :connected
+    attr_reader :status
 
-    def initialize(room, site="euphoria.io")
+    def initialize(room, site="54.148.52.205")
+        # NOTE: The default site is the raw ip for euphoria.io
         super()
 
         @roomname = room
-        @connected = false
+        @status = :closed
 
         @mutex = Mutex.new()
 
@@ -27,36 +28,29 @@ class Connection < EventGenerator
 
     private
     def em_connect()
-        EM.run do
-            # Attempt to connect
-            begin
-                @wscon = WebSocket::EventMachine::Client.connect(:uri => @wsuri)
-            rescue
-                EM.defer do
-                    trigger("closed")
-                end
+        # Attempt to connect
+        @wscon = WebSocket::EventMachine::Client.connect(:uri => @wsuri)
+
+        @wscon.onopen do
+            @status = :open
+        end
+
+        @wscon.comm_inactivity_timeout = 60
+
+        @wscon.onmessage do |data|
+            EM.defer do
+                packet = JSON.load(data)
+                trigger(packet["type"], packet["data"])
             end
+        end
 
-            if @wscon
-                @wscon.comm_inactivity_timeout = 60
-
-                @wscon.onopen do
-                    @connected = true
-                end
-
-                @wscon.onmessage do |data|
-                    EM.defer do
-                        packet = JSON.load(data)
-                        trigger(packet["type"], packet["data"])
-                    end
-                end
-
-                @wscon.onclose do
-                    if @connected
-                        EM.defer do
-                            trigger("closed")
-                        end
-                    end
+        @wscon.onclose do |code, reason|
+            if @status == :closing
+                @status = :closed
+            elsif @status == :open || @status == :opening
+                @status = :opening
+                EM.add_timer(5) do
+                    em_connect()
                 end
             end
         end
@@ -65,13 +59,14 @@ class Connection < EventGenerator
     public
     # Send a Ruby hash through the connection formatted as JSON.
     def send(packet)
-        if @connected
+        if @status == :open
             data = JSON.dump(packet)
             @mutex.lock()
             @wscon.send(data)
             @mutex.unlock()
+            return true
         end
-        return @connected
+        return false
     end
 
     # Initialize the connection
@@ -79,13 +74,14 @@ class Connection < EventGenerator
         super()
 
         if @wscon == nil
+            @status = :opening
             em_connect()
         end
     end
 
     # Disconnect from euphoria
     def stop()
-        @connected = false
+        @status = :closing
         @wscon.close(1000)
 
         super()

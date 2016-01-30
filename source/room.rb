@@ -5,31 +5,15 @@ class Room
     def initialize(room)
         @nick = ""
 
-        @conn = nil
-        @first_try = true
-        connect(room)
+        @conn = Connection.new(room)
 
         @conn.onevent("ping-event", lambda do |packet| ping_reply(packet) end)
         @conn.onevent("hello-event", lambda do |packet| ready() end)
-    end
-
-    private
-    # Strange function full of dark magic used to connect to euphoria.
-    def connect(room)
-        @conn = Connection.new(room)
-
-        @conn.onevent("closed", lambda do |packet|
-            if @first_try
-                @first_try = false
-            else
-                sleep(10)
-            end
-            connect(room)
-        end)
 
         @conn.start()
     end
 
+    private
     # Ping handler
     def ping_reply(packet)
         @conn.send(make_packet("ping-reply", {}))
@@ -66,8 +50,6 @@ class Room
     end
 
     def disconnect()
-        if @conn
-            @conn.stop()
-        end
+        @conn.stop()
     end
 end
