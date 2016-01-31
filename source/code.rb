@@ -47,15 +47,27 @@ class Response
     end
 end
 
-class SendResponse < Response
-    def do(message, room)
-        room.send_message(@args.join)
+class MessageResponse < Response
+    def initialize(args)
+        super(args)
+
+        @exp = botbot_expression(args.join)
     end
 end
 
-class ReplyResponse < Response
+class SendResponse < MessageResponse
     def do(message, room)
-        room.send_message(@args.join, message["id"])
+        @exp.get.each do |i|
+            room.send_message(i)
+        end
+    end
+end
+
+class ReplyResponse < MessageResponse
+    def do(message, room)
+        @exp.get.each do |i|
+            room.send_message(i, message["id"])
+        end
     end
 end
 
