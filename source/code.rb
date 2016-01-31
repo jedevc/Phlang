@@ -71,6 +71,10 @@ class ReplyResponse < MessageResponse
     end
 end
 
+RESPONSES = {"send" => lambda do |args| return SendResponse.new(args) end,
+             "reply" => lambda do |args| return ReplyResponse.new(args) end
+}
+
 class Block
     def initialize()
         @trigger = nil
@@ -89,11 +93,7 @@ class Block
         respls = []
         @responses.each do |r|
             resp, args = r
-            if resp == "send"
-                respls.push(SendResponse.new(args))
-            elsif resp == "reply"
-                respls.push(ReplyResponse.new(args))
-            end
+            respls.push(RESPONSES[resp].call(args))
         end
 
         return [@trigger, lambda do |m, r| respls.each do |f| f.do(m, r) end end]
@@ -104,7 +104,6 @@ class Code
     def initialize(raw)
         @raw = raw
 
-        @responses = ["send", "reply"]
         @triggers = ["msg"]
     end
 
@@ -120,8 +119,6 @@ class Code
 
         while bit
             if @triggers.include?(bit)
-                # puts("Trigger: " + bit)
-
                 if response.length > 0
                     block.add_response(response[0], response.slice(1, response.length))
                     response = []
@@ -135,15 +132,13 @@ class Code
                     block = Block.new()
                 end
                 trigger.push(bit)
-            elsif @responses.include?(bit)
-                # puts("Response: " + bit)
+            elsif RESPONSES.include?(bit)
                 if response.length > 0
                     block.add_response(response[0], response.slice(1, response.length))
                     response = []
                 end
                 response.push(bit)
             else
-                # puts("Arg: " + bit)
                 if response.length > 0
                     response.push(bit)
                 elsif trigger.length > 0
@@ -153,6 +148,8 @@ class Code
 
             bit = tokens.next
         end
+
+        # Add remaining bits at the end
 
         if trigger.length > 0
             block.add_trigger(trigger[0], trigger.slice(1, trigger.length))
