@@ -1,16 +1,18 @@
 require_relative 'connection'
 
+require_relative 'timer'
+
 # Wraps the connection and provides some helper functions
 class Room
     def initialize(room)
         @nick = ""
 
         @conn = Connection.new(room)
-
         @conn.onevent("ping-event", lambda do |packet| ping_reply(packet) end)
         @conn.onevent("hello-event", lambda do |packet| ready() end)
-
         @conn.start()
+
+        @timer = nil
     end
 
     private
@@ -28,6 +30,15 @@ class Room
     # Add a handler for a packet type
     def onpacket(t, f)
         @conn.onevent(t, lambda do |packet| f.call(packet, self) end)
+    end
+
+    def intime(t, f)
+        if @timer == nil
+            @timer = Timer.new()
+            @timer.start()
+        end
+
+        @timer.onevent(t, f)
     end
 
     # Identify by a nick in the room
