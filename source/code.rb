@@ -38,21 +38,53 @@ class Tokenizer
     end
 end
 
-class Trigger
-    def initialize(trig, trig_args, resp, resp_args)
-        @trig = trig
-        @trig_args = trig_args
-        @resp = resp
-        @resp_args = botbot_expression(resp_args)
+class Response
+    def initialize(args)
+        @args = args
     end
 
-    def attempt(message, room)
-        if @trig.call(@trig_args, message, room)
-            @resp.call(@resp_args, message, room)
-            return true
-        else
-            return false
+    def do()
+    end
+end
+
+class SendResponse < Response
+    def do(message, room)
+        room.send_message(@args.join)
+    end
+end
+
+class ReplyResponse < Response
+    def do(message, room)
+        room.send_message(@args.join, message["id"])
+    end
+end
+
+class Block
+    def initialize()
+        @trigger = nil
+        @responses = []
+    end
+
+    def add_trigger(trigger, targs)
+        @trigger = [trigger, targs]
+    end
+
+    def add_response(response, rargs)
+        @responses.push([response, rargs])
+    end
+
+    def export()
+        respls = []
+        @responses.each do |r|
+            resp, args = r
+            if resp == "send"
+                respls.push(SendResponse.new(args))
+            elsif resp == "reply"
+                respls.push(ReplyResponse.new(args))
+            end
         end
+
+        return [@trigger, lambda do |m, r| respls.each do |f| f.do(m, r) end end]
     end
 end
 
@@ -60,57 +92,66 @@ class Code
     def initialize(raw)
         @raw = raw
 
-        @responses = {"send" => lambda do |args, message, room|
-            args.get.each do |a|
-                room.send_message(a)
-            end
-        end,
-        "reply" => lambda do |args, message, room|
-            args.get.each do |a|
-                room.send_message(a, message["id"])
-            end
-        end}
-
-        @triggers = {"msg" => lambda do |args, message, room|
-            return Regexp.new(args).match(message["content"])
-        end}
+        @responses = ["send", "reply"]
+        @triggers = ["msg"]
     end
 
     def parse()
+        blocks = []
+        block = Block.new()
+
+        trigger = []
+        response = []
+
         tokens = Tokenizer.new(@raw)
         bit = tokens.next
 
-        final = []
-
-        trigger = nil
-        response = nil
-        targs = ""
-        rargs = ""
         while bit
-            if @triggers.has_key?(bit)
-                if trigger
-                    final.push(Trigger.new(trigger, targs, response, rargs))
-                    response = nil
-                    targs = ""
+            if @triggers.include?(bit)
+                # puts("Trigger: " + bit)
+
+                if response.length > 0
+                    block.add_response(response[0], response.slice(1, response.length))
+                    response = []
                 end
-                trigger = @triggers[bit]
-            elsif @responses.has_key?(bit)
-                rargs = ""
-                response = @responses[bit]
+
+                if trigger.length > 0
+                    block.add_trigger(trigger[0], trigger.slice(1, trigger.length))
+                    trigger = []
+
+                    blocks.push(block)
+                    block = Block.new()
+                end
+                trigger.push(bit)
+            elsif @responses.include?(bit)
+                # puts("Response: " + bit)
+                if response.length > 0
+                    block.add_response(response[0], response.slice(1, response.length))
+                    response = []
+                end
+                response.push(bit)
             else
-                if response
-                    rargs += bit
-                elsif trigger
-                    targs += bit
+                # puts("Arg: " + bit)
+                if response.length > 0
+                    response.push(bit)
+                elsif trigger.length > 0
+                    trigger.push(bit)
                 end
             end
+
             bit = tokens.next
         end
 
-        if trigger
-            final.push(Trigger.new(trigger, targs, response, rargs))
+        if trigger.length > 0
+            block.add_trigger(trigger[0], trigger.slice(1, trigger.length))
         end
 
-        return final
+        if response.length > 0
+            block.add_response(response[0], response.slice(1, response.length))
+        end
+
+        blocks.push(block)
+
+        return blocks
     end
 end

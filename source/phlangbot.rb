@@ -29,13 +29,25 @@ class PhlangBot < Bot
         admin_commands() if config.admin
         util_commands() if config.util
 
-        # Coded commands
-        triggers = Code.new(code).parse
-        triggers.each do |t|
-            add_handle("send-event", lambda {|m, r| t.attempt(m, r)})
-        end
+        load_code(Code.new(code).parse())
 
         info_commands() if config.info
+    end
+
+    def load_code(blocks)
+        blocks.each do |b|
+            trigger, response = b.export()
+            if trigger[0] == "msg"
+                add_handle("send-event", lambda do |m, r|
+                    if Regexp.new(trigger[1].join).match(m["content"])
+                        response.call(m, r)
+                        return true
+                    else
+                        return false
+                    end
+                end)
+            end
+        end
     end
 
     def admin_commands()
