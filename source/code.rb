@@ -104,7 +104,7 @@ class Code
     def initialize(raw)
         @raw = raw
 
-        @triggers = ["msg"]
+        @triggers = ["msg", "timer"]
     end
 
     def parse()

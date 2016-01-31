@@ -46,6 +46,15 @@ class PhlangBot < Bot
                         return false
                     end
                 end)
+            elsif trigger[0] == "timer"
+                add_handle("send-event", lambda do |m, r|
+                    if Regexp.new(trigger[1].slice(1, trigger.length).join).match(m["content"])
+                        r.intime(trigger[1][0].to_i, lambda do
+                            response.call(m, r)
+                        end)
+                    end
+                    return false
+                end)
             end
         end
     end
