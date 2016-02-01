@@ -49,15 +49,14 @@ class Response
     end
 end
 
-class MessageResponse < Response
+class BotbotResponse < Response
     def initialize(args)
         super(args)
-
-        @exp = botbot_expression(args.join)
+        @exp = botbot_expression(@args.join)
     end
 end
 
-class SendResponse < MessageResponse
+class SendResponse < BotbotResponse
     def do(message, room)
         @exp.get.each do |i|
             room.send_message(i)
@@ -65,7 +64,7 @@ class SendResponse < MessageResponse
     end
 end
 
-class ReplyResponse < MessageResponse
+class ReplyResponse < BotbotResponse
     def do(message, room)
         @exp.get.each do |i|
             room.send_message(i, message["id"])
@@ -73,8 +72,15 @@ class ReplyResponse < MessageResponse
     end
 end
 
+class NickResponse < BotbotResponse
+    def do(message, room)
+        room.send_nick(@exp.get[0])
+    end
+end
+
 RESPONSES = {"send" => lambda do |args| return SendResponse.new(args) end,
-             "reply" => lambda do |args| return ReplyResponse.new(args) end
+             "reply" => lambda do |args| return ReplyResponse.new(args) end,
+             "nick" => lambda do |args| return NickResponse.new(args) end
 }
 
 class Trigger
