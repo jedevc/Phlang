@@ -8,7 +8,8 @@ def load_local_bots(place="bots", extension="phlang")
 
     Dir.glob(File.join(target, "*.#{extension}")) do |filename|
         File.open(filename, 'r') do |file|
-            bot_sources[File.basename(filename, ".#{extension}")] = file.read.gsub("\n", " ")
+            source = file.read
+            bot_sources[File.basename(filename, ".#{extension}")] = source
         end
     end
 

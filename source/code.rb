@@ -13,7 +13,9 @@ class Tokenizer
         quote_open = false
         @raw.each_char do |c|
             if /\s/.match(c) && !quote_open
-                tokens.push(current)
+                if current.length > 0
+                    @tokens.push(current)
+                end
                 current = ''
             elsif c == '"'
                 quote_open = !quote_open
@@ -22,7 +24,7 @@ class Tokenizer
             end
         end
         if current.length > 0
-            tokens.push(current)
+            @tokens.push(current)
         end
 
         @rp = 0
