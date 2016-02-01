@@ -75,6 +75,45 @@ RESPONSES = {"send" => lambda do |args| return SendResponse.new(args) end,
              "reply" => lambda do |args| return ReplyResponse.new(args) end
 }
 
+class Trigger
+    def initialize(args)
+        @args = args
+    end
+
+    def add(bot, response)
+    end
+end
+
+class MessageTrigger < Trigger
+    def add(bot, response)
+        bot.add_handle("send-event", lambda do |m, r|
+            if Regexp.new(@args.join).match(m["content"])
+                response.call(m, r)
+                return true
+            else
+                return false
+            end
+        end)
+    end
+end
+
+class TimerTrigger < Trigger
+    def add(bot, response)
+        bot.add_handle("send-event", lambda do |m, r|
+            if Regexp.new(@args.slice(1, @args.length).join).match(m["content"])
+                r.intime(@args[0].to_i, lambda do
+                    response.call(m, r)
+                end)
+            end
+            return false
+        end)
+    end
+end
+
+TRIGGERS = {"msg" => lambda do |args| return MessageTrigger.new(args) end,
+            "timer" => lambda do |args| return TimerTrigger.new(args) end
+}
+
 class Block
     def initialize()
         @trigger = nil
@@ -90,21 +129,21 @@ class Block
     end
 
     def export()
-        respls = []
+        trig = TRIGGERS[@trigger[0]].call(@trigger[1])
+
+        resps = []
         @responses.each do |r|
             resp, args = r
-            respls.push(RESPONSES[resp].call(args))
+            resps.push(RESPONSES[resp].call(args))
         end
 
-        return [@trigger, lambda do |m, r| respls.each do |f| f.do(m, r) end end]
+        return [trig, lambda do |m, r| resps.each do |f| f.do(m, r) end end]
     end
 end
 
 class Code
     def initialize(raw)
         @raw = raw
-
-        @triggers = ["msg", "timer"]
     end
 
     def parse()
@@ -118,7 +157,7 @@ class Code
         bit = tokens.next
 
         while bit
-            if @triggers.include?(bit)
+            if TRIGGERS.include?(bit)
                 if response.length > 0
                     block.add_response(response[0], response.slice(1, response.length))
                     response = []

@@ -37,25 +37,7 @@ class PhlangBot < Bot
     def load_code(blocks)
         blocks.each do |b|
             trigger, response = b.export()
-            if trigger[0] == "msg"
-                add_handle("send-event", lambda do |m, r|
-                    if Regexp.new(trigger[1].join).match(m["content"])
-                        response.call(m, r)
-                        return true
-                    else
-                        return false
-                    end
-                end)
-            elsif trigger[0] == "timer"
-                add_handle("send-event", lambda do |m, r|
-                    if Regexp.new(trigger[1].slice(1, trigger.length).join).match(m["content"])
-                        r.intime(trigger[1][0].to_i, lambda do
-                            response.call(m, r)
-                        end)
-                    end
-                    return false
-                end)
-            end
+            trigger.add(self, response)
         end
     end
 
