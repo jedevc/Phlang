@@ -45,7 +45,7 @@ class Response
         @args = args
     end
 
-    def do()
+    def do(trigdata, message, room)
     end
 end
 
@@ -57,24 +57,34 @@ class BotbotResponse < Response
 end
 
 class SendResponse < BotbotResponse
-    def do(message, room)
-        @exp.get.each do |i|
-            room.send_message(i)
+    def do(trigdata, message, room)
+        @exp.get.each do |msg|
+            (trigdata.length-1).times do |i|
+                msg = msg.gsub("\\#{i+1}", trigdata[i+1])
+            end
+            room.send_message(msg)
         end
     end
 end
 
 class ReplyResponse < BotbotResponse
-    def do(message, room)
-        @exp.get.each do |i|
-            room.send_message(i, message["id"])
+    def do(trigdata, message, room)
+        @exp.get.each do |msg|
+            (trigdata.length-1).times do |i|
+                msg = msg.gsub("\\#{i+1}", trigdata[i+1])
+            end
+            room.send_message(msg, message["id"])
         end
     end
 end
 
 class NickResponse < BotbotResponse
-    def do(message, room)
-        room.send_nick(@exp.get[0])
+    def do(trigdata, message, room)
+        nick = @exp.get[0]
+        (trigdata.length-1).times do |i|
+            nick = nick.gsub("\\#{i+1}", trigdata[i+1])
+        end
+        room.send_nick(nick)
     end
 end
 
@@ -95,8 +105,9 @@ end
 class MessageTrigger < Trigger
     def add(bot, response)
         bot.add_handle("send-event", lambda do |m, r|
-            if Regexp.new(@args.join).match(m["content"])
-                response.call(m, r)
+            reg = Regexp.new(@args.join).match(m["content"])
+            if reg
+                response.call(reg, m, r)
                 return true
             else
                 return false
@@ -108,9 +119,10 @@ end
 class TimerTrigger < Trigger
     def add(bot, response)
         bot.add_handle("send-event", lambda do |m, r|
-            if Regexp.new(@args.slice(1, @args.length).join).match(m["content"])
+            reg = Regexp.new(@args.slice(1, @args.length).join).match(m["content"])
+            if reg
                 r.intime(@args[0].to_i, lambda do
-                    response.call(m, r)
+                    response.call(reg, m, r)
                 end)
             end
             return false
@@ -145,7 +157,7 @@ class Block
             resps.push(RESPONSES[resp].call(args))
         end
 
-        return [trig, lambda do |m, r| resps.each do |f| f.do(m, r) end end]
+        return [trig, lambda do |d, m, r| resps.each do |f| f.do(d, m, r) end end]
     end
 end
 
