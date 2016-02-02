@@ -29,7 +29,7 @@ class PhlangBot < Bot
         admin_commands() if config.admin
         util_commands() if config.util
 
-        load_code(Code.new(code).parse())
+        load_code(CodeParser.new(code).parse())
 
         info_commands() if config.info
     end

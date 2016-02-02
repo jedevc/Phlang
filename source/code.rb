@@ -52,7 +52,7 @@ end
 class BotbotResponse < Response
     def initialize(args)
         super(args)
-        @exp = botbot_expression(@args.join)
+        @exp = botbot_expression(@args.join(" "))
     end
 end
 
@@ -105,7 +105,7 @@ end
 class MessageTrigger < Trigger
     def add(bot, response)
         bot.add_handle("send-event", lambda do |m, r|
-            reg = Regexp.new(@args.join).match(m["content"])
+            reg = Regexp.new(@args.join(" ")).match(m["content"])
             if reg
                 response.call(reg, m, r)
                 return true
@@ -161,7 +161,7 @@ class Block
     end
 end
 
-class Code
+class CodeParser
     def initialize(raw)
         @raw = raw
     end
