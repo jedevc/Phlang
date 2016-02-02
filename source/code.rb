@@ -49,6 +49,15 @@ class Response
     end
 end
 
+module RegexBackreference
+    def backrefs(rmatch, msg)
+        (rmatch.length-1).times do |i|
+            msg = msg.gsub("\\#{i+1}", rmatch[i+1])
+        end
+        return msg
+    end
+end
+
 class BotbotResponse < Response
     def initialize(args)
         super(args)
@@ -57,34 +66,31 @@ class BotbotResponse < Response
 end
 
 class SendResponse < BotbotResponse
+    include RegexBackreference
+
     def do(trigdata, message, room)
         @exp.get.each do |msg|
-            (trigdata.length-1).times do |i|
-                msg = msg.gsub("\\#{i+1}", trigdata[i+1])
-            end
-            room.send_message(msg)
+            room.send_message(backrefs(trigdata, msg))
         end
     end
 end
 
 class ReplyResponse < BotbotResponse
+    include RegexBackreference
+
     def do(trigdata, message, room)
         @exp.get.each do |msg|
-            (trigdata.length-1).times do |i|
-                msg = msg.gsub("\\#{i+1}", trigdata[i+1])
-            end
-            room.send_message(msg, message["id"])
+            room.send_message(backrefs(trigdata, msg), message["id"])
         end
     end
 end
 
 class NickResponse < BotbotResponse
+    include RegexBackreference
+
     def do(trigdata, message, room)
         nick = @exp.get[0]
-        (trigdata.length-1).times do |i|
-            nick = nick.gsub("\\#{i+1}", trigdata[i+1])
-        end
-        room.send_nick(nick)
+        room.send_nick(backrefs(trigdata, nick))
     end
 end
 
