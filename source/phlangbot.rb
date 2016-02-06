@@ -42,7 +42,7 @@ class PhlangBot < Bot
     end
 
     def admin_commands()
-        add_handle("send-event", lambda do |message, room|
+        add_handle("send-event") do |message, room|
             if /^!kill @#{@name}$/.match(message["content"])
                 room.send_message("/me is exiting.", message["id"])
                 remove_room(room)
@@ -61,21 +61,21 @@ class PhlangBot < Bot
             elsif @paused.include?(room)
                 return true
             end
-        end)
+        end
     end
 
     def util_commands()
-        add_handle("send-event", lambda do |message, room|
+        add_handle("send-event") do |message, room|
             if /^!sendbot @#{@name} &(\S+)$/.match(message["content"])
                 room = /^!sendbot @#{@name} &(\S+)$/.match(message["content"])[1]
                 add_room(Room.new(room))
                 return true
             end
-        end)
+        end
     end
 
     def info_commands()
-        add_handle("send-event", lambda do |message, room|
+        add_handle("send-event") do |message, room|
             content = message["content"]
             if /^!ping(?: @#{@name})?$/.match(content)
                 room.send_message("Pong!", message["id"])
@@ -90,6 +90,6 @@ class PhlangBot < Bot
                 room.send_message("#{@name} is a bot created by '#{@creator}'.", message["id"])
                 return true
             end
-        end)
+        end
     end
 end

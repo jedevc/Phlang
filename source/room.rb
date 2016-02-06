@@ -8,8 +8,8 @@ class Room
         @nick = ""
 
         @conn = Connection.new(room)
-        @conn.onevent("ping-event", lambda do |packet| ping_reply(packet) end)
-        @conn.onevent("hello-event", lambda do |packet| ready() end)
+        @conn.onevent("ping-event") do |packet| ping_reply(packet) end
+        @conn.onevent("hello-event") do |packet| ready() end
         @conn.start()
 
         @timer = nil
@@ -28,17 +28,17 @@ class Room
 
     public
     # Add a handler for a packet type
-    def onpacket(t, f)
-        @conn.onevent(t, lambda do |packet| f.call(packet, self) end)
+    def onpacket(t, &blk)
+        @conn.onevent(t, &blk)
     end
 
-    def intime(t, f)
+    def intime(t, &blk)
         if @timer == nil
             @timer = Timer.new()
             @timer.start()
         end
 
-        @timer.onevent(t, f)
+        @timer.onevent(t, &blk)
     end
 
     # Identify by a nick in the room

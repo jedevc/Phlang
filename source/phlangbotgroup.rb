@@ -7,9 +7,9 @@ class PhlangBotGroup
     # Add a bot to the group
     def add(bot)
         @bots.push(bot)
-        bot.add_handle("rooms-gone", lambda do
+        bot.add_handle("rooms-gone") do
             remove(bot)
-        end)
+        end
     end
 
     # Remove a bot from the group

@@ -110,29 +110,29 @@ end
 
 class MessageTrigger < Trigger
     def add(bot, response)
-        bot.add_handle("send-event", lambda do |m, r|
+        bot.add_handle("send-event") do |m, r|
             reg = Regexp.new(@args.join(" ")).match(m["content"])
             if reg
                 response.call(reg, m, r)
-                return true
+                next true
             else
-                return false
+                next false
             end
-        end)
+        end
     end
 end
 
 class TimerTrigger < Trigger
     def add(bot, response)
-        bot.add_handle("send-event", lambda do |m, r|
+        bot.add_handle("send-event") do |m, r|
             reg = Regexp.new(@args.slice(1, @args.length).join).match(m["content"])
             if reg
-                r.intime(@args[0].to_i, lambda do
+                r.intime(@args[0].to_i) do
                     response.call(reg, m, r)
-                end)
+                end
             end
-            return false
-        end)
+            next false
+        end
     end
 end
 
@@ -144,7 +144,7 @@ class PushTimerTrigger < Trigger
 
     public
     def add(bot, response)
-        bot.add_handle("send-event", lambda do |m, r|
+        bot.add_handle("send-event") do |m, r|
             reg = Regexp.new(@args.slice(1, @args.length).join).match(m["content"])
             if reg
                 if @ending.include?(r)
@@ -155,21 +155,21 @@ class PushTimerTrigger < Trigger
                     end
                 end
             end
-            return false
-        end)
+            next false
+        end
     end
 
     private
     def add_time(room, delay, &blk)
         @ending[room] = Time.now + delay
-        room.intime(delay, lambda do
+        room.intime(delay) do
             if @ending[room] < Time.now
                 blk.call()
                 @ending.delete(room)
             else
                 add_time(room, @ending[room] - Time.now, &blk)
             end
-        end)
+        end
     end
 
     def push_time(room, delay)

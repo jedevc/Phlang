@@ -8,7 +8,7 @@ class MetaBot < Bot
         super("PhlangBot")
 
         @bots = PhlangBotGroup.new()
-        add_handle("send-event", lambda do |message, room|
+        add_handle("send-event") do |message, room|
             parts = /^!(\S*)(?: ([\s\S]*))?$/.match(message["content"])
             if parts
                 cmd = parts[1]
@@ -31,9 +31,9 @@ class MetaBot < Bot
                     b.add_room(r)
 
                     @bots.add(b)
-                    return true
+                    next true
                 end
             end
-        end)
+        end
     end
 end

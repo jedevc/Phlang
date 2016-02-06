@@ -14,11 +14,11 @@ class Bot
     def add_room(room)
         # Add handlers to room
         @handles.each_key do |type|
-            room.onpacket(type, lambda do |packet, room|
+            room.onpacket(type) do |packet|
                 @handles[type].each do |h|
                     if h.call(packet, room); break; end
                 end
-            end)
+            end
         end
 
         room.send_nick(@name)
@@ -54,19 +54,19 @@ class Bot
     end
 
     # Add a handler for a certain event type
-    def add_handle(type, f)
+    def add_handle(type, &blk)
         # Create the handler if it doesn't already exist
         if @handles[type] == nil
             @handles[type] = []
             @rooms.each do |r|
-                r.onpacket(type, lambda do |packet|
+                r.onpacket(type) do |packet|
                     @handles[type].each do |h|
                         if h.call(packet, r); break; end
                     end
-                end)
+                end
             end
         end
 
-        @handles[type].push(f)
+        @handles[type].push(blk)
     end
 end

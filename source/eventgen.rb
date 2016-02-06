@@ -17,11 +17,11 @@ class EventGenerator
     end
 
     public
-    def onevent(type, f)
+    def onevent(type, &blk)
         if @callbacks.include?(type)
-            @callbacks[type].push(f)
+            @callbacks[type].push(blk)
         else
-            @callbacks[type] = [f]
+            @callbacks[type] = [blk]
         end
     end
 

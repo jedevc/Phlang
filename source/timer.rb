@@ -10,13 +10,13 @@ class Timer < EventGenerator
     end
 
     public
-    def onevent(type, f)
-        super(type, f)
+    def onevent(type, &blk)
+        super(type, &blk)
 
         if @started
             EM.add_timer(type) do
-                f.call()
-                @callbacks[type].delete(f)
+                blk.call()
+                @callbacks[type].delete(blk)
             end
         end
     end
