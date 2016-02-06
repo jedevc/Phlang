@@ -64,12 +64,11 @@ class Connection < EventGenerator
     # Low level connect to euphoria and manage disconnects
     def em_connect()
         @wscon = WebSocket::EventMachine::Client.connect(:uri => @wsuri)
+        @wscon.comm_inactivity_timeout = 60
 
         @wscon.onopen do
             @status = :open
         end
-
-        @wscon.comm_inactivity_timeout = 60
 
         @wscon.onmessage do |data|
             EM.defer do
