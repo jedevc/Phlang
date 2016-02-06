@@ -7,6 +7,10 @@ require_relative 'logservice'
 class Room
     attr_reader :nick
 
+    def name
+        return @conn.roomname
+    end
+
     def initialize(room)
         @nick = ""
 
@@ -63,11 +67,6 @@ class Room
             @conn.send(make_packet("send", {"content" => content}))
             LogService.get.debug "@#{@nick}: sending message"
         end
-    end
-
-    # Get the roomname
-    def name()
-        return @conn.roomname
     end
 
     # Close connections and timers

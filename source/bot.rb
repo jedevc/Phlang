@@ -1,8 +1,12 @@
 # A bot responds to low-level triggers from a collection of rooms
 class Bot
-    attr_reader :name
+    attr_reader :basename
+
+    attr_accessor :group
 
     def initialize(name)
+        @group = nil
+
         @basename = name
         @rooms = []
 

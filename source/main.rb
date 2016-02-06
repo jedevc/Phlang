@@ -1,6 +1,6 @@
 require_relative 'local'
 require_relative 'metabot'
-require_relative 'phlangbotgroup'
+require_relative 'botgroup'
 
 require_relative 'logservice'
 
@@ -10,7 +10,7 @@ def main(args)
     LogService.provide(create_log(:info))
 
     begin
-        bs = PhlangBotGroup.new()
+        bs = BotGroup.new()
 
         if args[0] == "metabot"
             bot = MetaBot.new()
