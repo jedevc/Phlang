@@ -16,16 +16,16 @@ class MetaBot < Bot
 
                 if cmd == "help" and args == "@#{@name}"
                     room.send_message(":warning: This bot is still under dev.", message["id"])
-                    return true
+                    next true
                 elsif cmd == "ping"
                     room.send_message("Pong!", message["id"])
-                    return true
+                    next true
                 elsif cmd == "version"
                     room.send_message("Currently running phlang version 'dev'.", message["id"])
-                    return true
+                    next true
                 elsif cmd == "phlang"
                     nac = /@(\S*) ([\s\S]*)/.match(args)
-                    return false if nac == nil
+                    next false if nac == nil
                     b = PhlangBot.new(nac[1], nac[2], ADMIN_CONFIG, message["sender"]["name"])
                     r = Room.new(room.roomname)
                     b.add_room(r)

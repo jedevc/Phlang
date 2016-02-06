@@ -49,17 +49,17 @@ class PhlangBot < Bot
                 if room_count == 0
                     trigger("rooms-gone")
                 end
-                return true
+                next true
             elsif !@paused.include?(room) && /^!pause @#{@name}$/.match(message["content"])
                 room.send_message("/me is now paused.", message["id"])
                 @paused.push(room)
-                return true
+                next true
             elsif @paused.include?(room) && /^!restore @#{@name}$/.match(message["content"])
                 room.send_message("/me is now restored.", message["id"])
                 @paused.delete(room)
-                return true
+                next true
             elsif @paused.include?(room)
-                return true
+                next true
             end
         end
     end
@@ -69,7 +69,7 @@ class PhlangBot < Bot
             if /^!sendbot @#{@name} &(\S+)$/.match(message["content"])
                 room = /^!sendbot @#{@name} &(\S+)$/.match(message["content"])[1]
                 add_room(Room.new(room))
-                return true
+                next true
             end
         end
     end
@@ -79,16 +79,16 @@ class PhlangBot < Bot
             content = message["content"]
             if /^!ping(?: @#{@name})?$/.match(content)
                 room.send_message("Pong!", message["id"])
-                return true
+                next true
             elsif /^!help @#{@name}$/.match(content)
                 room.send_message(
                     "#{@name} is a bot created by '#{@creator}' using a top secret project.\n\n" \
                     "@#{@name} responds to !ping, !help, !kill, !pause (and !restore)." \
                 , message["id"])
-                return true
+                next true
             elsif /^!help$/.match(content)
                 room.send_message("#{@name} is a bot created by '#{@creator}'.", message["id"])
-                return true
+                next true
             end
         end
     end
