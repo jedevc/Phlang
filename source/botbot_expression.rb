@@ -96,16 +96,13 @@ def botbot_expression(str)
             current.add(n)
             current = n
         elsif c == ']' || c == '}'
-            if phrase.length != 0
-                current.add(phrase.strip())
-                phrase = ""
-            end
+            current.add(phrase.strip())
+            phrase = ""
+
             current = current.parent
         elsif c == ',' && current.parent != nil
-            if phrase.length != 0
-                current.add(phrase.strip())
-                phrase = ""
-            end
+            current.add(phrase.strip())
+            phrase = ""
         else
             phrase = phrase + c
         end

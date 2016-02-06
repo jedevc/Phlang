@@ -70,7 +70,9 @@ class SendResponse < BotbotResponse
 
     def do(trigdata, message, room)
         @exp.get.each do |msg|
-            room.send_message(backrefs(trigdata, msg))
+            if msg.length > 0
+                room.send_message(backrefs(trigdata, msg))
+            end
         end
     end
 end
@@ -80,7 +82,9 @@ class ReplyResponse < BotbotResponse
 
     def do(trigdata, message, room)
         @exp.get.each do |msg|
-            room.send_message(backrefs(trigdata, msg), message["id"])
+            if msg.length > 0
+                room.send_message(backrefs(trigdata, msg), message["id"])
+            end
         end
     end
 end
