@@ -1,3 +1,6 @@
+require 'rubygems'
+require 'bundler/setup'
+
 require 'eventmachine'
 
 require_relative 'eventgen'

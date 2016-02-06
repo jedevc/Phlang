@@ -1,4 +1,7 @@
+require 'rubygems'
+require 'bundler/setup'
 require 'websocket-eventmachine-client'
+
 require 'json'
 
 require_relative 'eventgen'
