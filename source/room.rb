@@ -32,6 +32,7 @@ class Room
         @conn.onevent(t, &blk)
     end
 
+    # Add a handler to be called in a certain amount of time
     def intime(t, &blk)
         if @timer == nil
             @timer = Timer.new()
@@ -56,11 +57,16 @@ class Room
         end
     end
 
+    # Get the roomname
     def roomname()
         return @conn.roomname
     end
 
+    # Close connections and timers
     def disconnect()
         @conn.stop()
+        if @timer
+            @timer.stop()
+        end
     end
 end

@@ -26,36 +26,6 @@ class Connection < EventGenerator
         @wscon = nil
     end
 
-    private
-    def em_connect()
-        # Attempt to connect
-        @wscon = WebSocket::EventMachine::Client.connect(:uri => @wsuri)
-
-        @wscon.onopen do
-            @status = :open
-        end
-
-        @wscon.comm_inactivity_timeout = 60
-
-        @wscon.onmessage do |data|
-            EM.defer do
-                packet = JSON.load(data)
-                trigger(packet["type"], packet["data"])
-            end
-        end
-
-        @wscon.onclose do |code, reason|
-            if @status == :closing
-                @status = :closed
-            elsif @status == :open || @status == :opening
-                @status = :opening
-                EM.add_timer(5) do
-                    em_connect()
-                end
-            end
-        end
-    end
-
     public
     # Send a Ruby hash through the connection formatted as JSON.
     def send(packet)
@@ -85,5 +55,35 @@ class Connection < EventGenerator
         @wscon.close(1000)
 
         super()
+    end
+
+    private
+    # Low level connect to euphoria and manage disconnects
+    def em_connect()
+        @wscon = WebSocket::EventMachine::Client.connect(:uri => @wsuri)
+
+        @wscon.onopen do
+            @status = :open
+        end
+
+        @wscon.comm_inactivity_timeout = 60
+
+        @wscon.onmessage do |data|
+            EM.defer do
+                packet = JSON.load(data)
+                trigger(packet["type"], packet["data"])
+            end
+        end
+
+        @wscon.onclose do |code, reason|
+            if @status == :closing
+                @status = :closed
+            elsif @status == :open || @status == :opening
+                @status = :opening
+                EM.add_timer(5) do
+                    em_connect()
+                end
+            end
+        end
     end
 end

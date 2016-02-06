@@ -15,12 +15,15 @@ class Timer < EventGenerator
 
         if @started
             EM.add_timer(type) do
-                blk.call()
-                @callbacks[type].delete(blk)
+                if @started
+                    blk.call()
+                    @callbacks[type].delete(blk)
+                end
             end
         end
     end
 
+    # Start timer groups
     def start()
         super()
 
@@ -29,13 +32,16 @@ class Timer < EventGenerator
         @callbacks.each_key do |k|
             @callbacks[k].each do |f|
                 EM.add_timer(k) do
-                    f.call();
-                    @callbacks[k].delete(f)
+                    if @started
+                        f.call();
+                        @callbacks[k].delete(f)
+                    end
                 end
             end
         end
     end
 
+    # Stop timer groups
     def stop()
         @started = false
 
