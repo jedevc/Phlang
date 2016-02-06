@@ -5,6 +5,8 @@ require_relative 'logservice'
 
 # Wraps the connection and provides some helper functions
 class Room
+    attr_reader :nick
+
     def initialize(room)
         @nick = ""
 
@@ -64,7 +66,7 @@ class Room
     end
 
     # Get the roomname
-    def roomname()
+    def name()
         return @conn.roomname
     end
 

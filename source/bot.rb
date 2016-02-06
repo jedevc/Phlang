@@ -3,7 +3,7 @@ class Bot
     attr_reader :name
 
     def initialize(name)
-        @name = name
+        @basename = name
         @rooms = []
 
         @handles = {}
@@ -21,7 +21,7 @@ class Bot
             end
         end
 
-        room.send_nick(@name)
+        room.send_nick(@basename)
         @rooms.push(room)
     end
 

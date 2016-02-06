@@ -43,18 +43,19 @@ class PhlangBot < Bot
 
     def admin_commands()
         add_handle("send-event") do |message, room|
-            if /^!kill @#{@name}$/.match(message["content"])
+            name = room.nick
+            if /^!kill @#{name}$/.match(message["content"])
                 room.send_message("/me is exiting.", message["id"])
                 remove_room(room)
                 if room_count == 0
                     trigger("rooms-gone")
                 end
                 next true
-            elsif !@paused.include?(room) && /^!pause @#{@name}$/.match(message["content"])
+            elsif !@paused.include?(room) && /^!pause @#{name}$/.match(message["content"])
                 room.send_message("/me is now paused.", message["id"])
                 @paused.push(room)
                 next true
-            elsif @paused.include?(room) && /^!restore @#{@name}$/.match(message["content"])
+            elsif @paused.include?(room) && /^!restore @#{name}$/.match(message["content"])
                 room.send_message("/me is now restored.", message["id"])
                 @paused.delete(room)
                 next true
@@ -66,8 +67,9 @@ class PhlangBot < Bot
 
     def util_commands()
         add_handle("send-event") do |message, room|
-            if /^!sendbot @#{@name} &(\S+)$/.match(message["content"])
-                room = /^!sendbot @#{@name} &(\S+)$/.match(message["content"])[1]
+            name = room.nick
+            if /^!sendbot @#{name} &(\S+)$/.match(message["content"])
+                room = /^!sendbot @#{name} &(\S+)$/.match(message["content"])[1]
                 add_room(Room.new(room))
                 next true
             end
@@ -76,18 +78,19 @@ class PhlangBot < Bot
 
     def info_commands()
         add_handle("send-event") do |message, room|
+            name = room.nick
             content = message["content"]
-            if /^!ping(?: @#{@name})?$/.match(content)
+            if /^!ping(?: @#{name})?$/.match(content)
                 room.send_message("Pong!", message["id"])
                 next true
-            elsif /^!help @#{@name}$/.match(content)
+            elsif /^!help @#{name}$/.match(content)
                 room.send_message(
-                    "#{@name} is a bot created by '#{@creator}' using a top secret project.\n\n" \
-                    "@#{@name} responds to !ping, !help, !kill, !pause (and !restore)." \
+                    "@#{@basename} is a bot created by '#{@creator}' using a top secret project.\n\n" \
+                    "@#{@basename} responds to !ping, !help, !kill, !pause (and !restore)." \
                 , message["id"])
                 next true
             elsif /^!help$/.match(content)
-                room.send_message("#{@name} is a bot created by '#{@creator}'.", message["id"])
+                room.send_message("#{@basename} is a bot created by '#{@creator}'.", message["id"])
                 next true
             end
         end
