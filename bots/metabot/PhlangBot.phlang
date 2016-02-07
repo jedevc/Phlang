@@ -1,6 +1,6 @@
-msg "!phlang @(\S*) ([\s\S]*)"
+msg "^!phlang @(\S*) ([\s\S]*)$"
     create \1 \2
     reply "Creating @\1..."
 
-msg "!help(?: @PhlangBot)?"
+msg "^!help(?: @PhlangBot)?$"
     reply ":warning: This bot has no help yet."
