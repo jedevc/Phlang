@@ -2,6 +2,9 @@ require_relative 'bot'
 
 require_relative 'botbot_expression'
 
+require_relative 'phlangbot'
+require_relative 'room'
+
 class Tokenizer
     attr_reader :tokens
 
@@ -23,6 +26,7 @@ class Tokenizer
                 current += c
             end
         end
+
         if current.length > 0
             @tokens.push(current)
         end
@@ -45,7 +49,7 @@ class Response
         @args = args
     end
 
-    def do(trigdata, message, room)
+    def do(trigdata, message, room, bot)
     end
 end
 
@@ -68,7 +72,7 @@ end
 class SendResponse < BotbotResponse
     include RegexBackreference
 
-    def do(trigdata, message, room)
+    def do(trigdata, message, room, bot)
         @exp.get.each do |msg|
             if msg.length > 0
                 room.send_message(backrefs(trigdata, msg))
@@ -80,7 +84,7 @@ end
 class ReplyResponse < BotbotResponse
     include RegexBackreference
 
-    def do(trigdata, message, room)
+    def do(trigdata, message, room, bot)
         @exp.get.each do |msg|
             if msg.length > 0
                 room.send_message(backrefs(trigdata, msg), message["id"])
@@ -92,15 +96,29 @@ end
 class NickResponse < BotbotResponse
     include RegexBackreference
 
-    def do(trigdata, message, room)
+    def do(trigdata, message, room, bot)
         nick = @exp.get[0]
         room.send_nick(backrefs(trigdata, nick))
     end
 end
 
+class CreateResponse < Response
+    include RegexBackreference
+
+    def do(trigdata, message, room, bot)
+        nick = backrefs(trigdata, @args[0])
+        code = backrefs(trigdata, @args.slice(1, @args.length).join(" "))
+        nb = PhlangBot.new(nick, code, ADMIN_CONFIG, message["sender"]["name"])
+        r = Room.new(room.name)
+        nb.add_room(r)
+        bot.group.add(nb)
+    end
+end
+
 RESPONSES = {"send" => lambda do |args| return SendResponse.new(args) end,
              "reply" => lambda do |args| return ReplyResponse.new(args) end,
-             "nick" => lambda do |args| return NickResponse.new(args) end
+             "nick" => lambda do |args| return NickResponse.new(args) end,
+             "create" => lambda do |args| return CreateResponse.new(args) end
 }
 
 class Trigger
@@ -117,7 +135,7 @@ class MessageTrigger < Trigger
         bot.add_handle("send-event") do |m, r|
             reg = Regexp.new(@args.join(" ")).match(m["content"])
             if reg
-                response.call(reg, m, r)
+                response.call(reg, m, r, bot)
                 next true
             else
                 next false
@@ -132,7 +150,7 @@ class TimerTrigger < Trigger
             reg = Regexp.new(@args.slice(1, @args.length).join).match(m["content"])
             if reg
                 r.intime(@args[0].to_i) do
-                    response.call(reg, m, r)
+                    response.call(reg, m, r, bot)
                 end
             end
             next false
@@ -155,7 +173,7 @@ class PushTimerTrigger < Trigger
                     push_time(r, @args[0].to_i)
                 else
                     add_time(r, @args[0].to_i) do
-                        response.call(reg, m, r)
+                        response.call(reg, m, r, bot)
                     end
                 end
             end
@@ -185,7 +203,7 @@ end
 
 TRIGGERS = {"msg" => lambda do |args| return MessageTrigger.new(args) end,
             "timer" => lambda do |args| return TimerTrigger.new(args) end,
-            "ptimer" => lambda do |args| return PushTimerTrigger.new(args) end,
+            "ptimer" => lambda do |args| return PushTimerTrigger.new(args) end
 }
 
 class Block
@@ -211,7 +229,7 @@ class Block
             resps.push(RESPONSES[resp].call(args))
         end
 
-        return [trig, lambda do |d, m, r| resps.each do |f| f.do(d, m, r) end end]
+        return [trig, lambda do |d, m, r, b| resps.each do |f| f.do(d, m, r, b) end end]
     end
 end
 
