@@ -16,14 +16,16 @@ end
 
 class TimerTrigger < Trigger
     def add(bot, response)
-        bot.add_handle("send-event") do |m, r|
-            reg = Regexp.new(@args.slice(1, @args.length).join).match(m["content"])
-            if reg
-                r.intime(@args[0].to_i) do
-                    response.call(reg, m, r, bot)
+        if @args.length >= 2
+            bot.add_handle("send-event") do |m, r|
+                reg = Regexp.new(@args.slice(1, @args.length).join).match(m["content"])
+                if reg
+                    r.intime(@args[0].to_i) do
+                        response.call(reg, m, r, bot)
+                    end
                 end
+                next false
             end
-            next false
         end
     end
 end
@@ -37,20 +39,22 @@ class PushTimerTrigger < Trigger
 
     public
     def add(bot, response)
-        bot.add_handle("send-event") do |m, r|
-            reg = Regexp.new(@args.slice(1, @args.length).join).match(m["content"])
-            if reg
-                if @ending.include?(r)
-                    @ending[room] = Time.now + args[0].to_i
-                    @last[r] = m
-                else
-                    add_time(r, @args[0].to_i) do
-                        response.call(reg, @last[r], r, bot)
+        if @args.length >= 2
+            bot.add_handle("send-event") do |m, r|
+                reg = Regexp.new(@args.slice(1, @args.length).join).match(m["content"])
+                if reg
+                    if @ending.include?(r)
+                        @ending[room] = Time.now + args[0].to_i
+                        @last[r] = m
+                    else
+                        add_time(r, @args[0].to_i) do
+                            response.call(reg, @last[r], r, bot)
+                        end
+                        @last[r] = m
                     end
-                    @last[r] = m
                 end
+                next false
             end
-            next false
         end
     end
 

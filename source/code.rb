@@ -77,15 +77,19 @@ class Block
     end
 
     def export(triggers, responses)
-        trig = triggers[@trigger[0]].call(@trigger[1])
+        if @trigger and @responses.length > 0
+            trig = triggers[@trigger[0]].call(@trigger[1])
 
-        resps = []
-        @responses.each do |r|
-            resp, args = r
-            resps.push(responses[resp].call(args))
+            resps = []
+            @responses.each do |r|
+                resp, args = r
+                resps.push(responses[resp].call(args))
+            end
+
+            return [trig, lambda do |d, m, r, b| resps.each do |f| f.do(d, m, r, b) end end]
+        else
+            return nil
         end
-
-        return [trig, lambda do |d, m, r, b| resps.each do |f| f.do(d, m, r, b) end end]
     end
 end
 

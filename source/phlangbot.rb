@@ -25,8 +25,11 @@ class PhlangBot < Bot
 
     def load_code(blocks)
         blocks.each do |b|
-            trigger, response = b.export(@config.triggers, @config.responses)
-            trigger.add(self, response)
+            tr = b.export(@config.triggers, @config.responses)
+            if tr
+                trigger, response = tr
+                trigger.add(self, response)
+            end
         end
     end
 

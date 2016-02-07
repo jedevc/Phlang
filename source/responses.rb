@@ -56,9 +56,11 @@ class CreateResponse < Response
     include RegexBackreference
 
     def do(trigdata, message, room, bot)
-        nick = backrefs(trigdata, @args[0])
-        code = backrefs(trigdata, @args.slice(1, @args.length).join(" "))
-        bot.fork_new_bot(nick, code, room.name, message["sender"]["name"])
+        if @args.length >= 2
+            nick = backrefs(trigdata, @args[0])
+            code = backrefs(trigdata, @args.slice(1, @args.length).join(" "))
+            bot.fork_new_bot(nick, code, room.name, message["sender"]["name"])
+        end
     end
 end
 
