@@ -1,6 +1,9 @@
 require_relative 'code'
 require_relative 'room'
 
+require_relative 'triggers'
+require_relative 'responses'
+
 class PhlangBotConfig
     attr_reader :admin
     attr_reader :util
@@ -29,14 +32,14 @@ class PhlangBot < Bot
         admin_commands() if config.admin
         util_commands() if config.util
 
-        load_code(CodeParser.new(code).parse)
+        load_code(CodeParser.new(code).parse(TRIGGERS, RESPONSES))
 
         info_commands() if config.info
     end
 
     def load_code(blocks)
         blocks.each do |b|
-            trigger, response = b.export()
+            trigger, response = b.export(TRIGGERS, RESPONSES)
             trigger.add(self, response)
         end
     end
