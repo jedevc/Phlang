@@ -1,18 +1,47 @@
+require_relative 'triggers'
+require_relative 'responses'
+
 class PhlangBotConfig
-    attr_reader :admin
-    attr_reader :util
-    attr_reader :info
+    attr_reader :builtins
 
     attr_reader :triggers
     attr_reader :responses
 
-    def initialize(aui, trigs, resps)
-        @admin, @util, @info = aui
+    def initialize(builtins, trigs, resps)
+        @builtins = builtins
         @triggers = trigs
         @responses = resps
     end
 end
 
-MINIMAL_CONFIG = PhlangBotConfig.new([false, false, false], TRIGGERS, RESPONSES + ADVANCED_RESPONSES)
-NORMAL_CONFIG = PhlangBotConfig.new([false, false, true], TRIGGERS, RESPONSES + ADVANCED_RESPONSES)
-ADMIN_CONFIG = PhlangBotConfig.new([true, true, true], TRIGGERS, RESPONSES)
+class BuiltinConfig
+    attr_reader :admin
+    attr_reader :util
+    attr_reader :info
+
+    def initialize(a, u, i)
+        @admin, @util, @info = a, u, i
+    end
+end
+
+NO_BUILTINS = BuiltinConfig.new(false, false, false)
+MINIMAL_BUILTINS = BuiltinConfig.new(false, false, true)
+FULL_BUILTINS = BuiltinConfig.new(true, true, true)
+
+MINIMAL_TRIGGERS = {
+    "msg" => lambda do |args| return MessageTrigger.new(args) end,
+    "timer" => lambda do |args| return TimerTrigger.new(args) end,
+    "ptimer" => lambda do |args| return PushTimerTrigger.new(args) end
+}
+
+FULL_TRIGGERS = MINIMAL_TRIGGERS
+
+MINIMAL_RESPONSES = {
+    "send" => lambda do |args| return SendResponse.new(args) end,
+    "reply" => lambda do |args| return ReplyResponse.new(args) end,
+    "nick" => lambda do |args| return NickResponse.new(args) end
+}
+
+FULL_RESPONSES = MINIMAL_RESPONSES.merge({
+    "create" => lambda do |args| return CreateResponse.new(args) end
+})

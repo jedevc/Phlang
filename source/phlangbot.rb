@@ -4,22 +4,6 @@ require_relative 'room'
 require_relative 'triggers'
 require_relative 'responses'
 
-class PhlangBotConfig
-    attr_reader :admin
-    attr_reader :util
-    attr_reader :info
-
-    def initialize(admin, util, info)
-        @admin = admin
-        @util = util
-        @info = info
-    end
-end
-
-MINIMAL_CONFIG = PhlangBotConfig.new(false, false, false)
-NORMAL_CONFIG = PhlangBotConfig.new(false, false, true)
-ADMIN_CONFIG = PhlangBotConfig.new(true, true, true)
-
 class PhlangBot < Bot
     def initialize(name, code, config, creator="local")
         super(name)
@@ -29,19 +13,32 @@ class PhlangBot < Bot
         @code = code
         @creator = creator
 
-        admin_commands() if config.admin
-        util_commands() if config.util
+        @config = config
 
-        load_code(CodeParser.new(code).parse(TRIGGERS, RESPONSES))
+        admin_commands() if @config.builtins.admin
+        util_commands() if @config.builtins.util
 
-        info_commands() if config.info
+        load_code(CodeParser.new(code).parse(@config.triggers, @config.responses))
+
+        info_commands() if @config.builtins.info
     end
 
     def load_code(blocks)
         blocks.each do |b|
-            trigger, response = b.export(TRIGGERS, RESPONSES)
+            trigger, response = b.export(@config.triggers, @config.responses)
             trigger.add(self, response)
         end
+    end
+
+    def fork_new_bot(nick, code, roomname, creator="local")
+        conf = PhlangBotConfig.new(FULL_BUILTINS, MINIMAL_TRIGGERS, MINIMAL_RESPONSES)
+
+        nb = PhlangBot.new(nick, code, conf, creator)
+
+        r = Room.new(roomname)
+        nb.add_room(r)
+
+        @group.add(nb)
     end
 
     def admin_commands()

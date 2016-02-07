@@ -70,9 +70,3 @@ class PushTimerTrigger < Trigger
         end
     end
 end
-
-TRIGGERS = {
-    "msg" => lambda do |args| return MessageTrigger.new(args) end,
-    "timer" => lambda do |args| return TimerTrigger.new(args) end,
-    "ptimer" => lambda do |args| return PushTimerTrigger.new(args) end
-}

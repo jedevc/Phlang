@@ -1,25 +1,5 @@
 require_relative 'phlangbot'
-
-# Load bots from 'place' with the desired 'extension'
-def load_local_bots(place, extension="phlang")
-    target = File.join(Dir.pwd, place)
-
-    bot_sources = {}
-
-    Dir.glob(File.join(target, "*.#{extension}")) do |filename|
-        File.open(filename, 'r') do |file|
-            source = file.read
-            bot_sources[File.basename(filename, ".#{extension}")] = source
-        end
-    end
-
-    bots = []
-    bot_sources.each_key do |k|
-        b = PhlangBot.new(k, bot_sources[k], NORMAL_CONFIG)
-        bots.push(b)
-    end
-    return bots
-end
+require_relative 'config'
 
 def load_bots(place, options, extension="phlang")
     base = File.join(Dir.pwd, place)
@@ -36,9 +16,11 @@ def load_bots(place, options, extension="phlang")
         end
     end
 
+    conf = PhlangBotConfig.new(MINIMAL_BUILTINS, FULL_TRIGGERS, FULL_RESPONSES)
+
     bots = []
     sources.each_key do |k|
-        b = PhlangBot.new(k, sources[k], NORMAL_CONFIG)
+        b = PhlangBot.new(k, sources[k], conf)
         bots.push(b)
     end
     return bots

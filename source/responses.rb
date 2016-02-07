@@ -1,4 +1,5 @@
 require_relative 'code'
+require_relative 'config'
 
 module RegexBackreference
     def backrefs(rmatch, msg)
@@ -55,16 +56,6 @@ class CreateResponse < Response
     def do(trigdata, message, room, bot)
         nick = backrefs(trigdata, @args[0])
         code = backrefs(trigdata, @args.slice(1, @args.length).join(" "))
-        nb = PhlangBot.new(nick, code, ADMIN_CONFIG, message["sender"]["name"])
-        r = Room.new(room.name)
-        nb.add_room(r)
-        bot.group.add(nb)
+        bot.fork_new_bot(nick, code, room.name, message["sender"]["name"])
     end
 end
-
-RESPONSES = {
-    "send" => lambda do |args| return SendResponse.new(args) end,
-    "reply" => lambda do |args| return ReplyResponse.new(args) end,
-    "nick" => lambda do |args| return NickResponse.new(args) end,
-    "create" => lambda do |args| return CreateResponse.new(args) end
-}
