@@ -1,6 +1,8 @@
 require_relative 'code'
 require_relative 'config'
 
+require_relative 'logservice'
+
 module RegexBackreference
     def backrefs(rmatch, msg)
         (rmatch.length-1).times do |i|
@@ -57,5 +59,14 @@ class CreateResponse < Response
         nick = backrefs(trigdata, @args[0])
         code = backrefs(trigdata, @args.slice(1, @args.length).join(" "))
         bot.fork_new_bot(nick, code, room.name, message["sender"]["name"])
+    end
+end
+
+class LogResponse < Response
+    include RegexBackreference
+
+    def do(trigdata, message, room, bot)
+        message = backrefs(trigdata, @args.join(" "))
+        LogService.get.info "@#{room.nick} logged: #{message}"
     end
 end
