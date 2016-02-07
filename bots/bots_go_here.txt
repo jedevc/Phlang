@@ -1,2 +1,6 @@
-Put your bots in this directory with the file extension '.phlang' for them to
-be run in local mode.
+Put your bots directly in this directory for them to be always run.
+
+When put in subfolders, the bots will only be loaded when passed the correct
+option.
+
+All bots must have the file extension '.phlang'.

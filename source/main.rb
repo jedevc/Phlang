@@ -1,30 +1,31 @@
-require_relative 'local'
-require_relative 'metabot'
+require_relative 'local'    
 require_relative 'botgroup'
 
 require_relative 'logservice'
 
+require 'optparse'
+
 Thread.abort_on_exception = true
 
-def main(args)
+def main(opts)
     LogService.provide(create_log(:info))
 
     begin
         bs = BotGroup.new()
 
-        if args[0] == "metabot"
-            bot = MetaBot.new()
-            bs.add(bot)
-        elsif args[0] == "local"
-            load_local_bots().each do |b|
+        base, options = "bots", opts[:where]
+        loaded = load_bots(base, options)
+        if loaded.length > 0
+            loaded.each do |b|
                 bs.add(b)
             end
         else
+            LogService.get.fatal "could not find any bots in (#{base} #{options})"
             return
         end
 
         bs.each do |b|
-            r = Room.new("costofcivilization")
+            r = Room.new(opts[:room])
             b.add_room(r)
         end
 
@@ -36,5 +37,22 @@ def main(args)
 end
 
 if __FILE__ == $0
-    main(ARGV)
+    # Set default args
+    options = {:where => [""], :room => "costofcivilization"}
+
+    # Parse command line args
+    OptionParser.new do |opts|
+        opts.banner = "Usage: ./run_phlang.sh [options]"
+
+        opts.on("-wWHERE", "--where=WHERE", "Folder in bots/ to load from") do |v|
+            options[:where].push(v)
+        end
+
+        opts.on("-rROOM", "--room=ROOM", "Room to spawn bots in") do |v|
+            options[:room] = v
+        end
+    end.parse!
+
+    # Call main function
+    main(options)
 end
