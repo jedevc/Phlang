@@ -78,8 +78,10 @@ def botbot_expression(str)
     root = InlineExpression.new(nil)
     current = root
     phrase = ""
-    str.each_char do |c|
-        if c == '['
+    (0...str.length).each do |i|
+        if str[i-1] == '\\' && "[]{},".include?(str[i])
+            phrase = phrase.slice(0, phrase.length-1) + str[i]
+        elsif str[i] == '['
             if phrase.length > 0
                 current.add(phrase)
                 phrase = ""
@@ -87,7 +89,7 @@ def botbot_expression(str)
             n = SerialExpression.new(current)
             current.add(n)
             current = n
-        elsif c == '{'
+        elsif str[i] == '{'
             if phrase.length > 0
                 current.add(phrase)
                 phrase = ""
@@ -95,16 +97,16 @@ def botbot_expression(str)
             n = RandomExpression.new(current)
             current.add(n)
             current = n
-        elsif c == ']' || c == '}'
+        elsif str[i] == ']' || str[i] == '}'
             current.add(phrase.strip())
             phrase = ""
 
             current = current.parent
-        elsif c == ',' && current.parent != nil
+        elsif str[i] == ',' && current.parent != nil
             current.add(phrase.strip())
             phrase = ""
         else
-            phrase = phrase + c
+            phrase = phrase + str[i]
         end
     end
     if phrase.length > 0
