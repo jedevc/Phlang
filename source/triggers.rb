@@ -32,6 +32,7 @@ class PushTimerTrigger < Trigger
     def initialize(args)
         super(args)
         @ending = {}
+        @last = {}
     end
 
     public
@@ -40,11 +41,13 @@ class PushTimerTrigger < Trigger
             reg = Regexp.new(@args.slice(1, @args.length).join).match(m["content"])
             if reg
                 if @ending.include?(r)
-                    push_time(r, @args[0].to_i)
+                    @ending[room] = Time.now + args[0].to_i
+                    @last[r] = m
                 else
                     add_time(r, @args[0].to_i) do
-                        response.call(reg, m, r, bot)
+                        response.call(reg, @last[r], r, bot)
                     end
+                    @last[r] = m
                 end
             end
             next false
@@ -61,12 +64,6 @@ class PushTimerTrigger < Trigger
             else
                 add_time(room, @ending[room] - Time.now, &blk)
             end
-        end
-    end
-
-    def push_time(room, delay)
-        if @ending.include?(room)
-            @ending[room] = Time.now + delay
         end
     end
 end
