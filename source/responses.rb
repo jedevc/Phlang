@@ -3,7 +3,7 @@ require_relative 'code'
 module RegexBackreference
     def backrefs(rmatch, msg)
         (rmatch.length-1).times do |i|
-            msg = msg.gsub("\\#{i+1}", rmatch[i+1])
+            msg = msg.gsub(/\\(#{i+1})/) {|s| rmatch[i+1]}
         end
         return msg
     end
@@ -62,8 +62,9 @@ class CreateResponse < Response
     end
 end
 
-RESPONSES = {"send" => lambda do |args| return SendResponse.new(args) end,
-             "reply" => lambda do |args| return ReplyResponse.new(args) end,
-             "nick" => lambda do |args| return NickResponse.new(args) end,
-             "create" => lambda do |args| return CreateResponse.new(args) end
+RESPONSES = {
+    "send" => lambda do |args| return SendResponse.new(args) end,
+    "reply" => lambda do |args| return ReplyResponse.new(args) end,
+    "nick" => lambda do |args| return NickResponse.new(args) end,
+    "create" => lambda do |args| return CreateResponse.new(args) end
 }
