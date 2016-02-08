@@ -51,6 +51,13 @@ class Response
 
     def do(trigdata, message, room, bot)
     end
+
+    def regexes(rmatch, msg)
+        (rmatch.length-1).times do |i|
+            msg = msg.gsub(/\\#{i+1}/) {|s| rmatch[i+1]}
+        end
+        return msg
+    end
 end
 
 class Trigger
