@@ -44,6 +44,14 @@ class PhlangBot < Bot
         @group.add(nb)
     end
 
+    # Check that message was not triggered by bot
+    def add_handle(type, &blk)
+        super(type) do |message, room|
+            next nil if message["sender"]["id"].split(':')[0] == "bot"
+            next blk.call(message, room)
+        end
+    end
+
     def admin_commands()
         add_handle("send-event") do |message, room|
             name = room.nick
