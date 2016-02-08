@@ -44,7 +44,7 @@ class PushTimerTrigger < Trigger
                 reg = Regexp.new(@args.slice(1, @args.length).join).match(m["content"])
                 if reg
                     if @ending.include?(r)
-                        @ending[room] = Time.now + args[0].to_i
+                        @ending[r] = Time.now + @args[0].to_i
                         @last[r] = m
                     else
                         add_time(r, @args[0].to_i) do
