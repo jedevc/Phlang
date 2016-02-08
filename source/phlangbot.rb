@@ -47,7 +47,9 @@ class PhlangBot < Bot
     # Check that message was not triggered by bot
     def add_handle(type, &blk)
         super(type) do |message, room|
-            next nil if message["sender"]["id"].split(':')[0] == "bot"
+            if message
+                next nil if message["sender"]["id"].split(':')[0] == "bot"
+            end
             next blk.call(message, room)
         end
     end

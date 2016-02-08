@@ -50,7 +50,7 @@ class Bot
 
     # Manually launch a trigger - useful for custom triggers and stuff
     def trigger(type)
-        if @handles[type] != nil
+        if @handles.has_key?(type)
             @handles[type].each do |h|
                 h.call()
             end
