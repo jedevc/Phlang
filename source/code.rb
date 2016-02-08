@@ -58,6 +58,13 @@ class Response
         end
         return msg
     end
+
+    def variables(vars, msg)
+        vars.each_key do |k|
+            msg = msg.gsub(/%#{k}/) {|s| vars[k]}
+        end
+        return msg
+    end
 end
 
 class Trigger

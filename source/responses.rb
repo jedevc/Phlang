@@ -14,7 +14,8 @@ class SendResponse < BotbotResponse
     def do(trigdata, message, room, bot)
         @exp.get.each do |msg|
             if msg.length > 0
-                room.send_message(regexes(trigdata, msg))
+                tosend = regexes(trigdata, msg)
+                room.send_message(tosend)
             end
         end
     end
@@ -24,7 +25,8 @@ class ReplyResponse < BotbotResponse
     def do(trigdata, message, room, bot)
         @exp.get.each do |msg|
             if msg.length > 0
-                room.send_message(regexes(trigdata, msg), message["id"])
+                tosend = regexes(trigdata, msg)
+                room.send_message(tosend, message["id"])
             end
         end
     end
@@ -32,8 +34,8 @@ end
 
 class NickResponse < BotbotResponse
     def do(trigdata, message, room, bot)
-        nick = @exp.get[0]
-        room.send_nick(regexes(trigdata, nick))
+        nick = regexes(trigdata, @exp.get[0])
+        room.send_nick(nick)
     end
 end
 
