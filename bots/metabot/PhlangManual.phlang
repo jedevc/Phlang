@@ -1,3 +1,10 @@
+msg "^!help @PhlangManual$"
+reply "This is the bot help for @PhlangManual.
+For help on the phlang ecosystem in general use '!phlang help'.
+
+:warning: Help coming soon...
+"
+
 msg "^!phlang help$"
 reply "
 !phlang is the base command for all phlang related commands

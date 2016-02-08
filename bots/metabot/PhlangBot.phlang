@@ -7,7 +7,7 @@ reply "Create bots using phlang."
 
 msg "^!help @PhlangBot"
 reply "This is the bot help for @PhlangBot.
-For help on the phlang ecosystem in general use !phlang help.
+For help on the phlang ecosystem in general use '!phlang help'.
 
 :warning: Help coming soon...
 "
