@@ -19,6 +19,7 @@ class SendResponse < BotbotResponse
                 room.send_message(tosend)
             end
         end
+        return false
     end
 end
 
@@ -31,6 +32,7 @@ class ReplyResponse < BotbotResponse
                 room.send_message(tosend, message["id"])
             end
         end
+        return false
     end
 end
 
@@ -39,6 +41,7 @@ class NickResponse < BotbotResponse
         nick = regexes(trigdata, @exp.get[0])
         nick = variables(bot.variables(room), nick)
         room.send_nick(nick)
+        return false
     end
 end
 
@@ -53,6 +56,23 @@ class SetResponse < Response
 
             bot.variables(room)[var] = val
         end
+        return false
+    end
+end
+
+class BreakResponse < Response
+    def do(trigdata, message, room, bot)
+        if @args.length >= 2 and @args[0][0] == '%'
+            first = regexes(trigdata, @args[0])
+            first = variables(bot.variables(room), first)
+
+            second = regexes(trigdata, @args.slice(1, @args.length).join(" "))
+            second = variables(bot.variables(room), second)
+
+            puts("#{first}, #{second}")
+            return first == second
+        end
+        return false
     end
 end
 
@@ -65,6 +85,7 @@ class CreateResponse < Response
             code = variables(bot.variables(room), code)
             bot.fork_new_bot(nick, code, room.name, message["sender"]["name"])
         end
+        return false
     end
 end
 
@@ -73,5 +94,6 @@ class LogResponse < Response
         message = regexes(trigdata, @args.join(" "))
         message = variables(bot.variables(room), message)
         LogService.get.info "@#{room.nick} logged: #{message}"
+        return false
     end
 end

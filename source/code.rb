@@ -100,7 +100,11 @@ class Block
                 resps.push(responses[resp].call(args))
             end
 
-            return [trig, lambda do |d, m, r, b| resps.each do |f| f.do(d, m, r, b) end end]
+            return [trig, lambda do |d, m, r, b|
+                resps.each do |f|
+                    return if f.do(d, m, r, b)
+                end
+            end]
         else
             return nil
         end
