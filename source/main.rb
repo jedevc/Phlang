@@ -1,4 +1,4 @@
-require_relative 'local'    
+require_relative 'local'
 require_relative 'botgroup'
 
 require_relative 'logservice'
@@ -8,7 +8,7 @@ require 'optparse'
 Thread.abort_on_exception = true
 
 def main(opts)
-    LogService.provide(create_log(:info))
+    LogService.provide(create_log(:info, opts[:logging]))
 
     begin
         bs = BotGroup.new()
@@ -38,7 +38,7 @@ end
 
 if __FILE__ == $0
     # Set default args
-    options = {:where => [""], :room => "costofcivilization"}
+    options = {:where => [""], :room => "costofcivilization", :logging => STDOUT}
 
     # Parse command line args
     OptionParser.new do |opts|
@@ -50,6 +50,10 @@ if __FILE__ == $0
 
         opts.on("-rROOM", "--room=ROOM", "Room to spawn bots in") do |v|
             options[:room] = v
+        end
+
+        opts.on("-lLOGFILE", "--logfile=LOGFILE", "File to output logs to.") do |v|
+            options[:logging] = v
         end
     end.parse!
 
