@@ -46,10 +46,26 @@ end
 
 class Response
     def initialize(args)
-        @args = args
+        @args = []
+        args.each do |a|
+            @args.push(botbot_expression(a))
+        end
     end
 
-    def do(trigdata, message, room, bot)
+    def respond(trigdata, packet, room, bot)
+        nargs = []
+        @args.each do |a|
+            resps = a.get
+            resps.each do |r|
+                na = regexes(trigdata, r)
+                na = variables(bot.variables(room), na)
+                nargs.push(na)
+            end
+        end
+        perform(nargs, packet, room, bot)
+    end
+
+    def perform(args, packet, room, bot)
     end
 
     def regexes(rmatch, msg)
@@ -102,7 +118,7 @@ class Block
 
             return [trig, lambda do |d, m, r, b|
                 resps.each do |f|
-                    return if f.do(d, m, r, b)
+                    return if f.respond(d, m, r, b)
                 end
             end]
         else
