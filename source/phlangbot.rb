@@ -42,13 +42,19 @@ class PhlangBot < Bot
         @group.add(nb)
     end
 
-    # Check that message was not triggered by bot
-    def add_handle(type, &blk)
-        super(type) do |message, room|
+    def msg_handle(&blk)
+        add_handle("send-event") do |message, room|
+            # Check that message was not triggered by bot
             if message
                 next nil if message["sender"]["id"].split(':')[0] == "bot"
             end
             next blk.call(message, room)
+        end
+    end
+
+    def start_handle(&blk)
+        add_handle("hello-event") do |message, room|
+            next blk.call(room)
         end
     end
 
@@ -60,7 +66,7 @@ class PhlangBot < Bot
     end
 
     def admin_commands()
-        add_handle("send-event") do |message, room|
+        msg_handle do |message, room|
             name = room.nick
             if /^!kill @#{name}$/.match(message["content"])
                 room.send_message("/me is exiting.", message["id"])
@@ -84,7 +90,7 @@ class PhlangBot < Bot
     end
 
     def util_commands()
-        add_handle("send-event") do |message, room|
+        msg_handle do |message, room|
             name = room.nick
             if /^!sendbot @#{name} &(\S+)$/.match(message["content"])
                 room = /^!sendbot @#{name} &(\S+)$/.match(message["content"])[1]
@@ -95,7 +101,7 @@ class PhlangBot < Bot
     end
 
     def info_commands()
-        add_handle("send-event") do |message, room|
+        msg_handle do |message, room|
             name = room.nick
             content = message["content"]
             if /^!ping(?: @#{name})?$/.match(content)

@@ -1,8 +1,17 @@
 require_relative 'code'
 
+class StartTrigger < Trigger
+    def add(bot, response)
+        bot.start_handle do |r|
+            response.call([], {}, r, bot)
+            next true
+        end
+    end
+end
+
 class MessageTrigger < Trigger
     def add(bot, response)
-        bot.add_handle("send-event") do |m, r|
+        bot.msg_handle do |m, r|
             reg = Regexp.new(@args.join(" ")).match(m["content"])
             if reg
                 response.call(reg, m, r, bot)
@@ -17,7 +26,7 @@ end
 class TimerTrigger < Trigger
     def add(bot, response)
         if @args.length >= 2
-            bot.add_handle("send-event") do |m, r|
+            bot.msg_handle do |m, r|
                 reg = Regexp.new(@args.slice(1, @args.length).join).match(m["content"])
                 if reg
                     r.intime(@args[0].to_i) do
@@ -40,7 +49,7 @@ class PushTimerTrigger < Trigger
     public
     def add(bot, response)
         if @args.length >= 2
-            bot.add_handle("send-event") do |m, r|
+            bot.msg_handle do |m, r|
                 reg = Regexp.new(@args.slice(1, @args.length).join).match(m["content"])
                 if reg
                     if @ending.include?(r)
