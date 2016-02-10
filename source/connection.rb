@@ -8,7 +8,7 @@ require_relative 'eventgen'
 
 # Create a packet.
 def make_packet(name, data)
-    return {"type": name, "data": data}
+    return {"type" => name, "data" => data}
 end
 
 # Simple connection to euphoria
