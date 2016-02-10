@@ -39,7 +39,8 @@ FULL_TRIGGERS = MINIMAL_TRIGGERS
 MINIMAL_RESPONSES = {
     "send" => lambda do |args| return SendResponse.new(args) end,
     "reply" => lambda do |args| return ReplyResponse.new(args) end,
-    "nick" => lambda do |args| return NickResponse.new(args) end
+    "nick" => lambda do |args| return NickResponse.new(args) end,
+    "set" => lambda do |args| return SetResponse.new(args) end
 }
 
 FULL_RESPONSES = MINIMAL_RESPONSES.merge({

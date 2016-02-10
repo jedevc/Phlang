@@ -7,20 +7,18 @@ require_relative 'responses'
 class PhlangBot < Bot
     def initialize(name, code, config, creator="local")
         super(name)
+        @config = config
 
         @paused = []
-
-        @code = code
         @creator = creator
-
-        @config = config
+        @code = code
 
         admin_commands() if @config.builtins.admin
         util_commands() if @config.builtins.util
-
         load_code(CodeParser.new(code).parse(@config.triggers, @config.responses))
-
         info_commands() if @config.builtins.info
+
+        @variables = {}
     end
 
     def load_code(blocks)
@@ -52,6 +50,13 @@ class PhlangBot < Bot
             end
             next blk.call(message, room)
         end
+    end
+
+    def variables(room)
+        if !@variables.has_key?(room)
+            @variables[room] = {}
+        end
+        return @variables[room]
     end
 
     def admin_commands()
