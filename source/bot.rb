@@ -48,6 +48,10 @@ class Bot
         return @rooms.length
     end
 
+    def room_names()
+        return @rooms.map {|r| r.name}
+    end
+
     # Manually launch a trigger - useful for custom triggers and stuff
     def trigger(type)
         if @handles.has_key?(type)

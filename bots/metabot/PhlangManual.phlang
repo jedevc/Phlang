@@ -9,6 +9,7 @@ msg "^!phlang help$"
 reply "
 !phlang is the base command for all phlang related commands
 '!phlang create @NICK CODE' creates a new bot called NICK out of CODE.
+'!phlang list' lists all the bots created.
 '!phlang help' displays this page.
 '!phlang manual' displays help for the phlang language.
 "

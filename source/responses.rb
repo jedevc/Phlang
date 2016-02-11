@@ -69,3 +69,15 @@ class LogResponse < Response
         return false
     end
 end
+
+class ListResponse < Response
+    def perform(args, packet, room, bot)
+        message = ""
+        bot.group.each do |b|
+            name = b.basename
+            rooms = b.room_names.map {|r| "&#{r}"}
+            message += "@#{name} in [#{rooms.join(", ")}]\n"
+        end
+        room.send_message(message, packet["id"])
+    end
+end

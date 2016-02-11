@@ -1,11 +1,15 @@
 msg "^!phlang create @(\S*) ([\s\S]*)$"
 create \1 \2
-reply "Creating @\1..."
+reply "Created @\1."
+log "Created @\1."
+
+msg "^!phlang list$"
+list
 
 msg "^!help$"
 reply "Create bots using phlang."
 
-msg "^!help @PhlangBot"
+msg "^!help @PhlangBot$"
 reply "This is the bot help for @PhlangBot.
 For help on the phlang ecosystem in general use '!phlang help'.
 
