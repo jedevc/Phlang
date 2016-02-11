@@ -25,7 +25,7 @@ def load_source(place, subs, extension="phlang")
 end
 
 def load_bots(source)
-    conf = PhlangBotConfig.new(MINIMAL_BUILTINS, FULL_TRIGGERS, FULL_RESPONSES)
+    conf = PhlangBotConfig.new(MINIMAL_BUILTINS, FULL_TRIGGERS, FULL_RESPONSES, true)
 
     bots = []
     source.each_key do |k|

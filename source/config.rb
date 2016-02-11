@@ -7,10 +7,13 @@ class PhlangBotConfig
     attr_reader :triggers
     attr_reader :responses
 
-    def initialize(builtins, trigs, resps)
+    attr_reader :botinteraction
+
+    def initialize(builtins, trigs, resps, botinteraction=false)
         @builtins = builtins
         @triggers = trigs
         @responses = resps
+        @botinteraction = botinteraction
     end
 end
 

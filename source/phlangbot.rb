@@ -45,10 +45,11 @@ class PhlangBot < Bot
     def msg_handle(&blk)
         add_handle("send-event") do |message, room|
             # Check that message was not triggered by bot
-            if message
-                next nil if message["sender"]["id"].split(':')[0] == "bot"
+            if message and (message["sender"]["id"].split(':')[0] != "bot" || @config.botinteraction)
+                next blk.call(message, room)
+            else
+                next nil
             end
-            next blk.call(message, room)
         end
     end
 
