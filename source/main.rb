@@ -8,7 +8,7 @@ require 'optparse'
 Thread.abort_on_exception = true
 
 def main(opts)
-    LogService.provide(create_log(:info, opts[:logging]))
+    LogService.provide(create_log(Logger::INFO, opts[:logging]))
 
     begin
         bs = BotGroup.new()
