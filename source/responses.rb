@@ -1,5 +1,4 @@
 require_relative 'code'
-require_relative 'config'
 
 require_relative 'logservice'
 

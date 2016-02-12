@@ -1,9 +1,4 @@
-require_relative 'bot'
-
 require_relative 'botbot_expression'
-
-require_relative 'phlangbot'
-require_relative 'room'
 
 class Tokenizer
     attr_reader :tokens

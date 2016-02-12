@@ -1,5 +1,6 @@
 require_relative 'code'
 require_relative 'room'
+require_relative 'bot'
 
 require_relative 'triggers'
 require_relative 'responses'
