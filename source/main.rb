@@ -15,7 +15,7 @@ def main(opts)
 
         base, options = "bots", opts[:file]
         source = load_source(base, options)
-        loaded = load_bots(source)
+        loaded = load_bots(source, opts[:config])
         if loaded.length > 0
             loaded.each do |b|
                 bs.add(b)
@@ -39,7 +39,10 @@ end
 
 if __FILE__ == $0
     # Set default args
-    options = {:file => [], :room => "costofcivilization", :logging => STDOUT}
+    options = {:file => [],
+               :room => "costofcivilization",
+               :logging => STDOUT,
+               :config => nil}
 
     # Parse command line args
     OptionParser.new do |opts|
@@ -55,6 +58,14 @@ if __FILE__ == $0
 
         opts.on("-lLOGFILE", "--logfile=LOGFILE", "File to output logs to.") do |v|
             options[:logging] = v
+        end
+
+        opts.on("-sSECURITY", "--security=SECURITY", "Security setting to use.") do |v|
+            if v == "low"
+                options[:config] = PhlangBotConfig.new(MINIMAL_BUILTINS, FULL_TRIGGERS, FULL_RESPONSES, true)
+            elsif v == "high"
+                options[:config] = PhlangBotConfig.new(FULL_BUILTINS, MINIMAL_TRIGGERS, MINIMAL_RESPONSES, true)
+            end
         end
     end.parse!
 
