@@ -58,7 +58,13 @@ class Response
             resps = a.get
             resps.each do |r|
                 na = regexes(trigdata, r)
-                na = variables(bot.variables(room), na)
+
+                more_vars = {}
+                if packet.include?("sender")
+                    more_vars["sender"] = packet["sender"]["name"]
+                end
+                na = variables(bot.variables(room), na, more_vars)
+
                 nargs.push(na)
             end
         end
@@ -75,9 +81,10 @@ class Response
         return msg
     end
 
-    def variables(vars, msg)
-        vars.each_key do |k|
-            msg = msg.gsub(/%#{k}/) {|s| vars[k]}
+    def variables(vars, msg, extras={})
+        complete = vars.merge(extras)
+        complete.each_key do |k|
+            msg = msg.gsub(/%#{k}/) {|s| complete[k]}
         end
         return msg
     end
