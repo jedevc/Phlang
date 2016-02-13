@@ -96,11 +96,7 @@ class PhlangBot < Bot
             name = room.nick
             if /^!sendbot @#{name} &(\S+)$/.match(message["content"])
                 newroom = /^!sendbot @#{name} &(\S+)$/.match(message["content"])[1]
-                if room_exists?(newroom)
-                    add_room(Room.new(newroom))
-                else
-                    room.send_message("Room does not exist.", message["id"])
-                end
+                add_room(Room.new(newroom))
             end
         end
     end

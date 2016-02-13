@@ -16,6 +16,10 @@ class Bot
     public
     # Add a room to the collection for monitoring
     def add_room(room)
+        if not room.exists
+            return
+        end
+
         # Add handlers to room
         @handles.each_key do |type|
             room.onpacket(type) do |packet|

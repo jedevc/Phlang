@@ -11,13 +11,20 @@ class Room
         return @conn.roomname
     end
 
+    def exists
+        return @conn != nil
+    end
+
     def initialize(room)
         @nick = ""
 
-        @conn = Connection.new(room)
-        @conn.onevent("ping-event") do |packet| ping_reply(packet) end
-        @conn.onevent("hello-event") do |packet| ready() end
-        @conn.start()
+        @conn = nil
+        if room_exists?(room)
+            @conn = Connection.new(room)
+            @conn.onevent("ping-event") do |packet| ping_reply(packet) end
+            @conn.onevent("hello-event") do |packet| ready() end
+            @conn.start()
+        end
 
         @timer = nil
     end
