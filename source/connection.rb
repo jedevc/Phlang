@@ -3,12 +3,27 @@ require 'bundler/setup'
 
 require 'websocket-eventmachine-client'
 require 'json'
+require 'open-uri'
 
 require_relative 'eventgen'
+
+# The raw ip for euphoria.io
+SITE_NAME = "euphoria.io"
+SITE_IP = "54.148.52.205"
 
 # Create a packet.
 def make_packet(name, data)
     return {"type" => name, "data" => data}
+end
+
+# Test if a room exists
+def room_exists?(room)
+    begin
+        open("https://#{SITE_NAME}/room/#{room}")
+        return true
+    rescue OpenURI::HTTPError
+        return false
+    end
 end
 
 # Simple connection to euphoria
@@ -16,8 +31,7 @@ class Connection < EventGenerator
     attr_reader :roomname
     attr_reader :status
 
-    def initialize(room, site="54.148.52.205")
-        # NOTE: The default site is the raw ip for euphoria.io
+    def initialize(room)
         super()
 
         @roomname = room
@@ -25,7 +39,7 @@ class Connection < EventGenerator
 
         @mutex = Mutex.new()
 
-        @wsuri = "wss://#{site}/room/#{room}/ws"
+        @wsuri = "wss://#{SITE_IP}/room/#{room}/ws"
         @wscon = nil
     end
 
@@ -82,7 +96,7 @@ class Connection < EventGenerator
                 @status = :closed
             elsif @status == :open || @status == :opening
                 @status = :opening
-                EM.add_timer(5) do
+                EM.add_timer(10) do
                     em_connect()
                 end
             end
