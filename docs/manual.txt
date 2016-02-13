@@ -1,0 +1,31 @@
+Phlang is made up of triggers and responses. The syntax is as follows:
+        TRIGGERS \[TRIGGER_ARGS, ...\]
+        RESPONSE \[RESPONSE_ARGS, ...\]
+
+Note that triggers and responses can be in any case and that the number of
+arguments differ for the command. You can have as many responses as you
+like to a single trigger and as many triggers as your heart desires.
+
+Back references also work similarly to Botbot. \1 is replaced by the first
+match \2 is replaced by the second match, and so on. Phlang also has variables
+which can be accessed using %VAR to get the value of VAR. The sender variable
+contains the name of the message sender.
+
+Botbot style expressions also work in the responses:
+\{a, b, c\} - Choose randomly between the 3 options.
+\[a, b, c\] - Send separate messages with the 3 options.
+Like Botbot, these expressions can be embedded in each other.
+
+Available triggers are:
+MSG regex - Trigger on an incoming message matching the regex.
+TIMER delay regex - Trigger after a delay in seconds on an message matching a
+regex.
+PTIMER - Same as timer, but when triggered again, resets the timer.
+START - Triggers once when the bot starts.
+
+Available responses are:
+SEND message - Send a root level message.
+REPLY message - Send a reply to the message that triggered it.
+NICK nick - Set the bot's nick.
+SET var value - Set the specified variable to the given value.
+BREAKIF first second - Stop the flow of control if first is equal second.
