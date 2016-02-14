@@ -1,9 +1,10 @@
-require_relative 'code'
 require_relative 'room'
 require_relative 'bot'
 
-require_relative 'triggers'
-require_relative 'responses'
+# require_relative 'triggers'
+# require_relative 'responses'
+
+require_relative 'parser'
 
 class PhlangBot < Bot
     def initialize(name, code, config, creator="local")
@@ -16,7 +17,7 @@ class PhlangBot < Bot
 
         admin_commands() if @config.builtins.admin
         util_commands() if @config.builtins.util
-        load_code(CodeParser.new(code).parse(@config.triggers, @config.responses))
+        load_code(Parser.new(code).parse(@config.triggers, @config.responses))
         info_commands() if @config.builtins.info
 
         @variables = {}
