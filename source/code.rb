@@ -1,4 +1,4 @@
-require_relative 'botbot_expression'
+require_relative 'botbot_responses'
 
 class Tokenizer
     attr_reader :tokens
@@ -43,7 +43,7 @@ class Response
     def initialize(args)
         @args = []
         args.each do |a|
-            @args.push(botbot_expression(a))
+            @args.push(botbot_response(a))
         end
     end
 

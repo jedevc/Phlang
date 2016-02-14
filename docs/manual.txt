@@ -11,10 +11,10 @@ match \2 is replaced by the second match, and so on. Phlang also has variables
 which can be accessed using %VAR to get the value of VAR. The sender variable
 contains the name of the message sender.
 
-Botbot style expressions also work in the responses:
+Botbot style responses can also be used:
 \{a, b, c\} - Choose randomly between the 3 options.
 \[a, b, c\] - Send separate messages with the 3 options.
-Like Botbot, these expressions can be embedded in each other.
+Like Botbot, these response styles can be embedded.
 
 Available triggers are:
 MSG regex - Trigger on an incoming message matching the regex.

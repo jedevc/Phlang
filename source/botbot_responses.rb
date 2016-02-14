@@ -1,4 +1,4 @@
-class BaseExpression
+class BotbotResponse
     attr_reader :parent
 
     def initialize(parent)
@@ -16,7 +16,7 @@ class BaseExpression
     end
 end
 
-class SerialExpression < BaseExpression
+class SerialBotbotResposne < BotbotResponse
     public
     def get()
         final = []
@@ -33,7 +33,7 @@ class SerialExpression < BaseExpression
     end
 end
 
-class InlineExpression < BaseExpression
+class InlineBotbotResponse < BotbotResponse
     public
     def get()
         final = []
@@ -61,7 +61,7 @@ class InlineExpression < BaseExpression
     end
 end
 
-class RandomExpression < BaseExpression
+class RandomBotbotResponse < BotbotResponse
     public
     def get()
         index = rand(@children.length)
@@ -74,8 +74,8 @@ class RandomExpression < BaseExpression
     end
 end
 
-def botbot_expression(str)
-    root = InlineExpression.new(nil)
+def botbot_response(str)
+    root = InlineBotbotResponse.new(nil)
     current = root
     phrase = ""
     (0...str.length).each do |i|
@@ -86,7 +86,7 @@ def botbot_expression(str)
                 current.add(phrase)
                 phrase = ""
             end
-            n = SerialExpression.new(current)
+            n = SerialBotbotResposne.new(current)
             current.add(n)
             current = n
         elsif str[i] == '{'
@@ -94,7 +94,7 @@ def botbot_expression(str)
                 current.add(phrase)
                 phrase = ""
             end
-            n = RandomExpression.new(current)
+            n = RandomBotbotResponse.new(current)
             current.add(n)
             current = n
         elsif str[i] == ']' || str[i] == '}'
