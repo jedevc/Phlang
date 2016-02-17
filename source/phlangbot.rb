@@ -1,9 +1,6 @@
 require_relative 'room'
 require_relative 'bot'
 
-# require_relative 'triggers'
-# require_relative 'responses'
-
 require_relative 'parser'
 
 class PhlangBot < Bot
@@ -17,7 +14,7 @@ class PhlangBot < Bot
 
         admin_commands() if @config.builtins.admin
         util_commands() if @config.builtins.util
-        load_code(Parser.new(code).parse(@config.triggers, @config.responses))
+        load_code(Parser.new(code, @config.triggers, @config.responses).parse())
         info_commands() if @config.builtins.info
 
         @variables = {}

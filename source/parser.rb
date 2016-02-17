@@ -1,11 +1,12 @@
 require_relative 'tokenizer'
 
 class Parser
-    def initialize(raw)
+    def initialize(raw, triggers, responses)
         @raw = raw
+        @triggers, @responses = triggers, responses
     end
 
-    def parse(triggers, responses)
+    def parse()
         blocks = []
         block = Block.new()
 
@@ -15,7 +16,7 @@ class Parser
         tokens = Tokens(@raw)
 
         tokens.each do |bit|
-            if triggers.include?(bit)
+            if @triggers.include?(bit)
                 if response.length > 0
                     block.add_response(response[0], response.slice(1, response.length))
                     response = []
@@ -29,7 +30,7 @@ class Parser
                     block = Block.new()
                 end
                 trigger.push(bit)
-            elsif responses.include?(bit)
+            elsif @responses.include?(bit)
                 if response.length > 0
                     block.add_response(response[0], response.slice(1, response.length))
                     response = []

@@ -1,21 +1,25 @@
 def Tokens(raw)
     tokens = []
-    current = ''
-    quote_open = false
+    last = ""
+    quotes = false
     raw.each_char do |c|
-        if /\s/.match(c) && !quote_open
-            if current.length > 0
-                tokens.push(current)
+        if /\s/.match(c)
+            if quotes
+                last += c
+            else
+                if last.length > 0
+                    tokens.push(last)
+                    last = ""
+                end
             end
-            current = ''
         elsif c == '"'
-            quote_open = !quote_open
+            quotes = !quotes
         else
-            current += c
+            last += c
         end
     end
-    if current.length > 0
-        tokens.push(current)
+    if last.length > 0
+        tokens.push(last)
     end
     return tokens
 end
