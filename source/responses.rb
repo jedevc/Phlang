@@ -74,7 +74,7 @@ class ListResponse < Response
         message = ""
         bot.group.each do |b|
             name = b.basename
-            rooms = b.room_name.map {|r| "&#{r}"}
+            rooms = b.room_names.map {|r| "&#{r}"}
             message += "@#{name} in [#{rooms.join(", ")}]\n"
         end
         room.send_message(message, packet["id"])
@@ -93,13 +93,10 @@ end
 
 class RecoverResponse < Response
     def perform(args, packet, room, bot)
-        group = bot.group
-        bot.group.clear()
-
         if args.length > 0
-            group.recover(args[0])
+            bot.group.recover(args[0])
         else
-            group.recover()
+            bot.group.recover()
         end
 
         return false

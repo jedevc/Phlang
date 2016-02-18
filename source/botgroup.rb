@@ -53,6 +53,7 @@ class PhlangBotGroup
         data = JSON.load(raw)
 
         # Add the data to the group
+        clear()
         data.each do |d|
             @bots.push(PhlangBot.from_h(d))
         end
@@ -65,6 +66,7 @@ class PhlangBotGroup
         @bots.delete(bot)
     end
 
+    # Remove all bots from the group
     def clear()
         @bots.each do |bot|
             bot.group = nil
