@@ -51,5 +51,7 @@ MINIMAL_RESPONSES = {
 FULL_RESPONSES = MINIMAL_RESPONSES.merge({
     "create" => lambda do |args| return CreateResponse.new(args) end,
     "log" => lambda do |args| return LogResponse.new(args) end,
-    "list" => lambda do |args| return ListResponse.new(args) end
+    "list" => lambda do |args| return ListResponse.new(args) end,
+    "save" => lambda do |args| return SaveResponse.new(args) end,
+    "recover" => lambda do |args| return RecoverResponse.new(args) end
 })

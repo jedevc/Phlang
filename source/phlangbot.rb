@@ -30,6 +30,23 @@ class PhlangBot < Bot
         end
     end
 
+    def to_h()
+        return {
+            "nick" => @basename,
+            "rooms" => room_names,
+            "code" => @code,
+            "creator" => @creator
+        }
+    end
+
+    def self.from_h(h, conf)
+        bot = PhlangBot.new(h["nick"], h["code"], conf, h["creator"])
+        h["rooms"].each do |r|
+            bot.add_room(Room.new(r))
+        end
+        return bot
+    end
+
     def fork_new_bot(nick, code, roomname, creator="local")
         conf = PhlangBotConfig.new(FULL_BUILTINS, MINIMAL_TRIGGERS, MINIMAL_RESPONSES)
 

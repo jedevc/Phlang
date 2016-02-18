@@ -78,5 +78,22 @@ class ListResponse < Response
             message += "@#{name} in [#{rooms.join(", ")}]\n"
         end
         room.send_message(message, packet["id"])
+        return false
+    end
+end
+
+class SaveResponse < Response
+    def perform(args, packet, room, bot)
+        bot.group.save()
+        return false
+    end
+end
+
+class RecoverResponse < Response
+    def perform(args, packet, room, bot)
+        group = bot.group
+        bot.group.clear()
+        group.recover()
+        return false
     end
 end

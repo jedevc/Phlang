@@ -6,6 +6,14 @@ log "Created @\1."
 msg "^!phlang list$"
 list
 
+msg "^!phlang save$"
+log "Creating snapshot."
+save
+
+msg "^!phlang recover$"
+log "Recovering snapshot."
+recover
+
 msg "^!help$"
 reply "Create bots using phlang."
 

@@ -11,7 +11,7 @@ def main(opts)
     LogService.provide(create_log(Logger::INFO, opts[:logging]))
 
     begin
-        bs = BotGroup.new()
+        bs = PhlangBotGroup.new()
 
         base, options = "bots", opts[:file]
         source = load_source(base, options)
