@@ -84,7 +84,9 @@ end
 
 class SaveResponse < Response
     def perform(args, packet, room, bot)
-        bot.group.save()
+        if args.length > 0
+            bot.group.save(args[0])
+        end
         return false
     end
 end
@@ -93,7 +95,13 @@ class RecoverResponse < Response
     def perform(args, packet, room, bot)
         group = bot.group
         bot.group.clear()
-        group.recover()
+
+        if args.length > 0
+            group.recover(args[0])
+        else
+            group.recover()
+        end
+
         return false
     end
 end

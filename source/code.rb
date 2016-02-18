@@ -19,6 +19,7 @@ class Response
                 if packet.include?("sender")
                     more_vars["sender"] = packet["sender"]["name"]
                 end
+                more_vars["time"] = Time.now.utc.strftime("%Y-%m-%d %H:%M:%S")
                 na = variables(bot.variables(room), na, more_vars)
 
                 nargs.push(na)
