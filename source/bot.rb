@@ -47,11 +47,7 @@ class Bot
         @rooms = []
     end
 
-    # Get the number of rooms that a bot is part of
-    def room_count()
-        return @rooms.length
-    end
-
+    # Get the rooms that a bot is part of
     def room_names()
         return @rooms.map {|r| r.name}
     end

@@ -71,8 +71,8 @@ class PhlangBot < Bot
             if /^!kill @#{name}$/.match(message["content"])
                 room.send_message("/me is exiting.", message["id"])
                 remove_room(room)
-                if room_count == 0
-                    trigger("rooms-gone")
+                if room_names.length == 0
+                    @group.remove(self)
                 end
                 next true
             elsif !@paused.include?(room) && /^!pause @#{name}$/.match(message["content"])

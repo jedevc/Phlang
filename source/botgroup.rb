@@ -8,9 +8,6 @@ class BotGroup
     def add(bot)
         bot.group = self
         @bots.push(bot)
-        bot.add_handle("rooms-gone") do
-            remove(bot)
-        end
     end
 
     # Remove a bot from the group
