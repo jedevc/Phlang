@@ -14,7 +14,7 @@ class PhlangBot < Bot
 
         admin_commands() if @config.builtins.admin
         util_commands() if @config.builtins.util
-        load_code(Parser.new(code, @config.triggers, @config.responses).parse())
+        load_code(Parser.new(code, @config.allowed_triggers, @config.allowed_responses).parse())
         info_commands() if @config.builtins.info
 
         @variables = {}
@@ -22,7 +22,7 @@ class PhlangBot < Bot
 
     def load_code(blocks)
         blocks.each do |b|
-            tr = b.export(@config.triggers, @config.responses)
+            tr = b.export(@config.allowed_triggers, @config.allowed_responses)
             if tr
                 trigger, response = tr
                 trigger.add(self, response)
@@ -35,12 +35,13 @@ class PhlangBot < Bot
             "nick" => @basename,
             "rooms" => room_names,
             "code" => @code,
-            "creator" => @creator
+            "creator" => @creator,
+            "config" => @config.to_h
         }
     end
 
-    def self.from_h(h, conf)
-        bot = PhlangBot.new(h["nick"], h["code"], conf, h["creator"])
+    def self.from_h(h)
+        bot = PhlangBot.new(h["nick"], h["code"], PhlangBotConfig.from_h(h["config"]), h["creator"])
         h["rooms"].each do |r|
             bot.add_room(Room.new(r))
         end

@@ -54,7 +54,7 @@ class PhlangBotGroup
 
         # Add the data to the group
         data.each do |d|
-            @bots.push(PhlangBot.from_h(d, PhlangBotConfig.new(FULL_BUILTINS, MINIMAL_TRIGGERS, MINIMAL_RESPONSES)))
+            @bots.push(PhlangBot.from_h(d))
         end
     end
 

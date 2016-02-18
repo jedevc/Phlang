@@ -1,4 +1,5 @@
 require_relative 'tokenizer'
+require_relative 'block'
 
 class Parser
     def initialize(raw, triggers, responses)

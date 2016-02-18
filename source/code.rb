@@ -55,38 +55,3 @@ class Trigger
     def add(bot, response)
     end
 end
-
-class Block
-    def initialize()
-        @trigger = nil
-        @responses = []
-    end
-
-    def add_trigger(trigger, targs)
-        @trigger = [trigger, targs]
-    end
-
-    def add_response(response, rargs)
-        @responses.push([response, rargs])
-    end
-
-    def export(triggers, responses)
-        if @trigger and @responses.length > 0
-            trig = triggers[@trigger[0]].call(@trigger[1])
-
-            resps = []
-            @responses.each do |r|
-                resp, args = r
-                resps.push(responses[resp].call(args))
-            end
-
-            return [trig, lambda do |d, m, r, b|
-                resps.each do |f|
-                    return if f.respond(d, m, r, b)
-                end
-            end]
-        else
-            return nil
-        end
-    end
-end
