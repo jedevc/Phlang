@@ -12,6 +12,10 @@ class TriggerFactory
     def self.build(t, args)
         return @@triggers[t].call(args)
     end
+
+    def self.triggers
+        return @@triggers
+    end
 end
 
 class ResponseFactory
@@ -20,7 +24,10 @@ class ResponseFactory
         "reply" => lambda do |args| return ReplyResponse.new(args) end,
         "nick" => lambda do |args| return NickResponse.new(args) end,
         "set" => lambda do |args| return SetResponse.new(args) end,
-        "breakif" => lambda do |args| return BreakResponse.new(args) end,
+        "breakif" => lambda do |args| return BreakResponse.new(args) end
+    }
+
+    @@advanced_responses = {
         "create" => lambda do |args| return CreateResponse.new(args) end,
         "log" => lambda do |args| return LogResponse.new(args) end,
         "list" => lambda do |args| return ListResponse.new(args) end,
@@ -29,6 +36,15 @@ class ResponseFactory
     }
 
     def self.build(t, args)
-        return @@responses[t].call(args)
+        complete = @@responses.merge(@@advanced_responses)
+        return complete[t].call(args)
+    end
+
+    def self.responses
+        return @@responses
+    end
+
+    def self.advanced_responses
+        return @@advanced_responses
     end
 end

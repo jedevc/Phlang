@@ -1,5 +1,4 @@
-require_relative 'triggers'
-require_relative 'responses'
+require_relative 'factory'
 
 class PhlangBotConfig
     attr_reader :builtins
@@ -61,27 +60,8 @@ NO_BUILTINS = BuiltinConfig.new(false, false, false)
 MINIMAL_BUILTINS = BuiltinConfig.new(false, false, true)
 FULL_BUILTINS = BuiltinConfig.new(true, true, true)
 
-MINIMAL_TRIGGERS = [
-    "start",
-    "msg",
-    "timer",
-    "ptimer"
-]
-
+MINIMAL_TRIGGERS = TriggerFactory.triggers.keys
 FULL_TRIGGERS = MINIMAL_TRIGGERS
 
-MINIMAL_RESPONSES = [
-    "send",
-    "reply",
-    "nick",
-    "set",
-    "breakif"
-]
-
-FULL_RESPONSES = MINIMAL_RESPONSES + [
-    "create",
-    "log",
-    "list",
-    "save",
-    "recover"
-]
+MINIMAL_RESPONSES = ResponseFactory.responses.keys
+FULL_RESPONSES = MINIMAL_RESPONSES + ResponseFactory.advanced_responses.keys
