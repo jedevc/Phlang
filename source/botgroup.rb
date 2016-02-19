@@ -55,7 +55,7 @@ class PhlangBotGroup
         # Add the data to the group
         clear()
         data.each do |d|
-            @bots.push(PhlangBot.from_h(d))
+            add(PhlangBot.from_h(d))
         end
     end
 

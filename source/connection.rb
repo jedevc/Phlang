@@ -87,7 +87,9 @@ class Connection < EventGenerator
         @wscon.onmessage do |data|
             EM.defer do
                 packet = JSON.load(data)
-                trigger(packet["type"], packet["data"])
+                if @status == :open
+                    trigger(packet["type"], packet["data"])
+                end
             end
         end
 
