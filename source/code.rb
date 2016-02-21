@@ -1,5 +1,14 @@
 require_relative 'expression'
 
+def lookup(var, *where)
+    where.each do |w|
+        if w.has_key?(var)
+            return w[var]
+        end
+    end
+    return nil
+end
+
 class Response
     def initialize(args)
         @args = args
@@ -28,15 +37,6 @@ class Response
 
     def perform(args, packet, room, bot)
     end
-
-    def lookup(var, *where)
-        where.each do |w|
-            if w.has_key?(var)
-                return w[var]
-            end
-        end
-        return nil
-    end
 end
 
 class Trigger
@@ -45,5 +45,24 @@ class Trigger
     end
 
     def add(bot, response)
+    end
+
+    def trigger(response, packet, room, bot)
+        funcs = {
+            "%" => lambda {|a| lookup(a, bot.variables(room))}
+        }
+        context = ShuntContext.new(funcs)
+
+        nargs = []
+        @args.each do |a|
+            trigs = TextExpression.new(a, context).calculate
+            trigs.each do |t|
+                nargs.push(t.to_s)
+            end
+        end
+        return perform(response, nargs, packet, room, bot)
+    end
+
+    def perform(response, args, packet, room, bot)
     end
 end
