@@ -7,7 +7,6 @@ class RPN
     end
 
     def calculate()
-        puts @tokens.to_s
         stack = []
         @tokens.each do |t|
             if @funcs.has_key?(t)
@@ -32,6 +31,10 @@ class ShuntContext
 
     def initialize(funcs={})
         basics = [
+            ['*', lambda {|a, b| a.to_i * b.to_i}],
+            ['/', lambda {|a, b| a.to_i / b.to_i}],
+            ['+', lambda {|a, b| a.to_i + b.to_i}],
+            ['-', lambda {|a, b| a.to_i - b.to_i}],
             ['_', lambda {|a, b| a.to_s + b.to_s}]
         ]
         @operators = basics.each_with_object({}) {|e, h| h[e[0]] = e[1]}
@@ -110,5 +113,13 @@ class Expression < RPN
         end
 
         super(output, context.operators.merge(context.functions))
+    end
+end
+
+class TextExpression < Expression
+    def initialize(text, context)
+        tokens = Tokens(text, context.operators.keys +
+                        [context.left_paren, context.right_paren])
+        super(tokens, context)
     end
 end

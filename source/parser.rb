@@ -1,10 +1,39 @@
-require_relative 'tokenizer'
+require_relative 'factory'
 require_relative 'block'
 
+require_relative 'expression'
+
 class Parser
-    def initialize(raw, triggers, responses)
-        @raw = raw
-        @triggers, @responses = triggers, responses
+    def initialize(raw, allowed_triggers, allowed_responses)
+        @allowed_triggers = allowed_triggers
+        @allowed_responses = allowed_responses
+
+        @bits = []
+        last = ""
+        quotes = false
+        raw.each_char do |c|
+            if /\s/.match(c)
+                if quotes
+                    last += c
+                else
+                    if last.length > 0
+                        @bits.push(last)
+                        last = ""
+                    end
+                end
+            elsif c == '|'
+                quotes = !quotes
+                if last.length > 0
+                    @bits.push(last)
+                    last = ""
+                end
+            else
+                last += c
+            end
+        end
+        if last.length > 0
+            @bits.push(last)
+        end
     end
 
     def parse()
@@ -14,10 +43,8 @@ class Parser
         trigger = []
         response = []
 
-        tokens = Tokens(@raw)
-
-        tokens.each do |bit|
-            if @triggers.include?(bit)
+        @bits.each do |bit|
+            if @allowed_triggers.include?(bit)
                 if response.length > 0
                     block.add_response(response[0], response.slice(1, response.length))
                     response = []
@@ -31,7 +58,7 @@ class Parser
                     block = Block.new()
                 end
                 trigger.push(bit)
-            elsif @responses.include?(bit)
+            elsif @allowed_responses.include?(bit)
                 if response.length > 0
                     block.add_response(response[0], response.slice(1, response.length))
                     response = []
@@ -47,15 +74,12 @@ class Parser
         end
 
         # Add remaining bits at the end
-
         if trigger.length > 0
             block.add_trigger(trigger[0], trigger.slice(1, trigger.length))
         end
-
         if response.length > 0
             block.add_response(response[0], response.slice(1, response.length))
         end
-
         blocks.push(block)
 
         return blocks

@@ -1,28 +1,26 @@
-require_relative 'botbot_responses'
+require_relative 'expression'
 
 class Response
     def initialize(args)
-        @args = []
-        args.each do |a|
-            @args.push(botbot_response(a))
-        end
+        @args = args
     end
 
     def respond(trigdata, packet, room, bot)
+        extravars = {"time" => Time.now.utc.strftime("%Y-%m-%d %H:%M:%S")}
+        if packet.has_key?("sender")
+            extravars["sender"] = packet["sender"]["name"]
+        end
+        funcs = {
+            "\\" => lambda {|a| trigdata[a.to_i]},
+            "%" => lambda {|a| lookup(a, bot.variables(room), extravars)}
+        }
+        context = ShuntContext.new(funcs)
+
         nargs = []
         @args.each do |a|
-            resps = a.get
+            resps = TextExpression.new(a, context).calculate
             resps.each do |r|
-                na = regexes(trigdata, r)
-
-                more_vars = {}
-                if packet.include?("sender")
-                    more_vars["sender"] = packet["sender"]["name"]
-                end
-                more_vars["time"] = Time.now.utc.strftime("%Y-%m-%d %H:%M:%S")
-                na = variables(bot.variables(room), na, more_vars)
-
-                nargs.push(na)
+                nargs.push(r.to_s)
             end
         end
         perform(nargs, packet, room, bot)
@@ -31,19 +29,13 @@ class Response
     def perform(args, packet, room, bot)
     end
 
-    def regexes(rmatch, msg)
-        (rmatch.length-1).times do |i|
-            msg = msg.gsub(/\\#{i+1}/) {|s| rmatch[i+1]}
+    def lookup(var, *where)
+        where.each do |w|
+            if w.has_key?(var)
+                return w[var]
+            end
         end
-        return msg
-    end
-
-    def variables(vars, msg, extras={})
-        complete = vars.merge(extras)
-        complete.each_key do |k|
-            msg = msg.gsub(/%#{k}/) {|s| complete[k]}
-        end
-        return msg
+        return nil
     end
 end
 
