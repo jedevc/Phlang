@@ -25,13 +25,9 @@ class Response
         }
         context = ShuntContext.new(funcs)
 
-        nargs = []
-        @args.each do |a|
-            resps = TextExpression.new(a, context).calculate
-            resps.each do |r|
-                nargs.push(r.to_s)
-            end
-        end
+        nargs = Expression.new(@args, context).calculate
+        nargs.map! {|e| e.to_s}
+
         perform(nargs, packet, room, bot)
     end
 
@@ -53,13 +49,9 @@ class Trigger
         }
         context = ShuntContext.new(funcs)
 
-        nargs = []
-        @args.each do |a|
-            trigs = TextExpression.new(a, context).calculate
-            trigs.each do |t|
-                nargs.push(t.to_s)
-            end
-        end
+        nargs = Expression.new(@args, context).calculate
+        nargs.map! {|e| e.to_s}
+
         return perform(response, nargs, packet, room, bot)
     end
 

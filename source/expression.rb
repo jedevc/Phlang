@@ -115,11 +115,3 @@ class Expression < RPN
         super(output, context.operators.merge(context.functions))
     end
 end
-
-class TextExpression < Expression
-    def initialize(text, context)
-        tokens = Tokens(text, context.operators.keys +
-                        [context.left_paren, context.right_paren])
-        super(tokens, context)
-    end
-end

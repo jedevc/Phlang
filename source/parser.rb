@@ -8,32 +8,9 @@ class Parser
         @allowed_triggers = allowed_triggers
         @allowed_responses = allowed_responses
 
-        @bits = []
-        last = ""
-        quotes = false
-        raw.each_char do |c|
-            if /\s/.match(c)
-                if quotes
-                    last += c
-                else
-                    if last.length > 0
-                        @bits.push(last)
-                        last = ""
-                    end
-                end
-            elsif c == '|'
-                quotes = !quotes
-                if last.length > 0
-                    @bits.push(last)
-                    last = ""
-                end
-            else
-                last += c
-            end
-        end
-        if last.length > 0
-            @bits.push(last)
-        end
+        # HACK!
+        ctx = ShuntContext.new()
+        @bits = Tokens(raw, ctx.operators.keys + [ctx.left_paren, ctx.right_paren])
     end
 
     def parse()

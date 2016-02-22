@@ -1,31 +1,30 @@
-msg |"^!phlang create @(\S*) ([\s\S]*)$"|
-create |\(1) \(2)|
-reply |"Created @" _ \(1)|
-log |"Created @" _ \(1)|
+msg "^!phlang create @(\S*) ([\s\S]*)$"
+create \(1) \(2)
+reply "Created @" _ \(1)
+log "Created @" _ \(1)
 
-msg |"^!phlang list$"|
+msg "^!phlang list$"
 list
 
-msg |"^!phlang save$"|
-set |snapname %(time)|
-log |"Creating snapshot with name " _ %(time)|
-reply |"Creating snapshot with name " _ %(time)|
-save |%(snapname)|
+msg "^!phlang save$"
+set snapname %(time)
+log "Creating snapshot with name " _ %(time)
+reply "Creating snapshot with name " _ %(time)
+save %(snapname)
 
-msg |"^!phlang recover ([\s\S]*)$"|
-log |"Recovering snapshot from " _ \(1)|
-recover |\(1)|
+msg "^!phlang recover ([\s\S]*)$"
+log "Recovering snapshot from " _ \(1)
+recover \(1)
 
-msg |"^!phlang recover$"|
-log |"Recovering latest snapshot."|
+msg "^!phlang recover$"
+log "Recovering latest snapshot."
 recover
 
-msg |"^!help$"|
-reply |"Create bots using phlang."|
+msg "^!help$"
+reply "Create bots using phlang."
 
-msg |"^!help @PhlangBot$"|
-reply |"This is the bot help for @PhlangBot.
-For help on the phlang ecosystem in general use '!phlang help'.
+msg "^!help @PhlangBot$"
+reply "This is the bot help for @PhlangBot.
 
 :warning: Help coming soon...
-"|
+"
