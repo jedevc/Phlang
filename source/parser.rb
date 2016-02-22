@@ -8,9 +8,7 @@ class Parser
         @allowed_triggers = allowed_triggers
         @allowed_responses = allowed_responses
 
-        # HACK!
-        ctx = ShuntContext.new()
-        @bits = Tokens(raw, ctx.operators.keys + [ctx.left_paren, ctx.right_paren])
+        @bits = Tokens(raw)
     end
 
     def parse()

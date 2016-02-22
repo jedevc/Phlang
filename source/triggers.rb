@@ -21,7 +21,7 @@ class MessageTrigger < Trigger
     end
 
     def perform(response, args, packet, room, bot)
-        reg = Regexp.new(args.join(" ")).match(packet["content"])
+        reg = Regexp.new(args.join).match(packet["content"])
         if reg
             response.call(reg, packet, room, bot)
             return true

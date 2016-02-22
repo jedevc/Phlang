@@ -1,4 +1,4 @@
-def Tokens(raw, ops)
+def Tokens(raw)
     tokens = []
     last = ""
     quotes = false
@@ -22,19 +22,19 @@ def Tokens(raw, ops)
             last += c
         end
 
-        ops.each do |op|
-            if last.end_with?(op) and !quotes
-                first = last.slice(0, last.length - op.length)
-                if first.length > 0
-                    tokens.push(first)
-                end
-                tokens.push(op)
-                last = ""
+        op = /([^\w\s.])$/.match(last)
+        if op and !quotes
+            first = last.slice(0, last.length - op[1].length)
+            if first.length > 0
+                tokens.push(first)
             end
+            tokens.push(op[1])
+            last = ""
         end
     end
     if last.length > 0
         tokens.push(last)
     end
+
     return tokens
 end

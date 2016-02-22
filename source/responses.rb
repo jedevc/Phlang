@@ -63,7 +63,7 @@ end
 
 class LogResponse < Response
     def perform(args, packet, room, bot)
-        message = args.join(" ")
+        message = args.join("")
         LogService.get.info "@#{room.nick} logged: #{message}"
         return false
     end
