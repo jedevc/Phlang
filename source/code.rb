@@ -21,7 +21,8 @@ class Response
         end
         funcs = {
             "\\" => lambda {|a| trigdata[a.to_i]},
-            "%" => lambda {|a| lookup(a, bot.variables(room), extravars)}
+            "%" => lambda {|a| lookup(a, bot.variables(room), extravars)},
+            "?" => lambda {|*args| args.sample}
         }
         context = ShuntContext.new(funcs)
 

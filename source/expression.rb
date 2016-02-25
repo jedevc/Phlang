@@ -1,5 +1,7 @@
 require_relative 'tokenizer'
 
+COUNT_SEPERATOR = '#'
+
 class RPN
     def initialize(tokens, funcs)
         @tokens = tokens
@@ -12,6 +14,12 @@ class RPN
             if @funcs.has_key?(t)
                 vals = stack.pop(@funcs[t].parameters.length)
                 ret = @funcs[t].call(*vals)
+                stack.push(ret)
+            elsif @funcs.has_key?(t.split(COUNT_SEPERATOR)[0])
+                name, args = t.split(COUNT_SEPERATOR)
+                args = args.to_i
+                vals = stack.pop(args)
+                ret = @funcs[name].call(*vals)
                 stack.push(ret)
             else
                 stack.push(t)
@@ -71,11 +79,14 @@ class Expression < RPN
         output = []
         stack = []
 
+        argscounts = [0]
+
         tokens.each do |t|
             if /^[0-9]+$/.match(t)  # Number
                 output.push(t)
             elsif context.is_func?(t)  # Function
                 stack.push(t)
+                argscounts.push(0)
             elsif t == context.separator  # Argument seperator
                 while stack[-1] != context.left_paren
                     if stack.length == 0
@@ -83,6 +94,7 @@ class Expression < RPN
                     end
                     output.push(stack.pop())
                 end
+                argscounts[-1] += 1
             elsif context.is_op?(t)  # Operator
                 while stack.length > 0 and context.is_op?(stack[-1]) and context.lower(t, stack[-1])
                     output.push(stack.pop())
@@ -100,7 +112,8 @@ class Expression < RPN
                 stack.pop()  # Get rid of matching paren
 
                 if context.is_func?(stack[-1])
-                    output.push(stack.pop())
+                    output.push(stack.pop() + "#{COUNT_SEPERATOR}#{argscounts[-1] + 1}")
+                    argscounts.pop()
                 end
             else  # Treat anything else as a string
                 output.push(t)
