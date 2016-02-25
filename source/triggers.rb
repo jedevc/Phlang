@@ -39,10 +39,10 @@ class TimerTrigger < Trigger
     end
 
     def perform(response, args, packet, room, bot)
-        reg = Regexp.new(args.slice(1, args.length).join).match(m["content"])
+        reg = Regexp.new(args.slice(1, args.length).join).match(packet["content"])
         if reg
-            r.intime(args[0].to_i) do
-                response.call(reg, m, r, bot)
+            room.intime(args[0].to_i) do
+                response.call(reg, packet, room, bot)
             end
         end
         return false
@@ -64,16 +64,16 @@ class PushTimerTrigger < Trigger
     end
 
     def perform(response, args, packet, room, bot)
-        reg = Regexp.new(@args.slice(1, @args.length).join).match(m["content"])
+        reg = Regexp.new(@args.slice(1, @args.length).join).match(packet["content"])
         if reg
-            if @ending.include?(r)
-                @ending[r] = Time.now + @args[0].to_i
-                @last[r] = m
+            if @ending.include?(room)
+                @ending[room] = Time.now + @args[0].to_i
+                @last[room] = packet
             else
-                add_time(r, @args[0].to_i) do
-                    response.call(reg, @last[r], r, bot)
+                add_time(room, @args[0].to_i) do
+                    response.call(reg, @last[room], room, bot)
                 end
-                @last[r] = m
+                @last[room] = packet
             end
         end
         return false
