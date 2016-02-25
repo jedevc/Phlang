@@ -101,7 +101,11 @@ class PhlangBot < Bot
             name = room.nick
             if /^!sendbot @#{name} &(\S+)$/.match(message["content"])
                 newroom = /^!sendbot @#{name} &(\S+)$/.match(message["content"])[1]
-                add_room(Room.new(newroom))
+                if add_room(Room.new(newroom))
+                    room.send_message("/me has been sent to &#{newroom}.", message["id"])
+                else
+                    room.send_message("/me could not find &#{newroom}.", message["id"])
+                end
             end
         end
     end

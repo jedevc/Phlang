@@ -17,7 +17,7 @@ class Bot
     # Add a room to the collection for monitoring
     def add_room(room)
         if not room.exists
-            return
+            return false
         end
 
         # Add handlers to room
@@ -31,6 +31,8 @@ class Bot
 
         room.send_nick(@basename)
         @rooms.push(room)
+
+        return true
     end
 
     # Remove a room from monitoring
