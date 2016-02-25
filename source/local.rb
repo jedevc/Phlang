@@ -1,22 +1,18 @@
 require_relative 'phlangbot'
 require_relative 'config'
 
-def load_source(place, subs, extension="phlang")
+def load_source(places)
     sources = {}
 
-    subs.each do |s|
-        Dir.glob(File.join(place, s + ".#{extension}")) do |filename|
+    places.each do |place|
+        Dir.glob(place) do |filename|
             if File.file?(filename)
                 File.open(filename, 'r') do |file|
                     source = file.read
-                    sources[File.basename(filename, ".#{extension}")] = source
+                    sources[File.basename(filename, '.*')] = source
                 end
-            end
-        end
-
-        Dir.glob(File.join(place, s)) do |filename|
-            if File.directory?(filename)
-                sources.merge!(load_source(filename, ["*"], extension))
+            elsif File.directory?(filename)
+                sources.merge!(load_source([File.join(filename, '*')]))
             end
         end
     end

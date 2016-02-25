@@ -13,15 +13,15 @@ def main(opts)
     begin
         bs = PhlangBotGroup.new()
 
-        base, options = "bots", opts[:file]
-        source = load_source(base, options)
+        places = opts[:file]
+        source = load_source(places)
         loaded = load_bots(source, opts[:config])
         if loaded.length > 0
             loaded.each do |b|
                 bs.add(b)
             end
         else
-            LogService.get.fatal "could not find any bots in (#{base}/#{options})"
+            LogService.get.fatal "could not find any bots at #{places}"
             return
         end
 
@@ -39,28 +39,30 @@ end
 
 if __FILE__ == $0
     # Set default args
-    options = {:file => [],
-               :room => "costofcivilization",
-               :logging => STDOUT,
-               :config => nil}
+    options = {
+        :file => [],
+        :room => "costofcivilization",
+        :logging => STDOUT,
+        :config => nil
+    }
 
     # Parse command line args
     OptionParser.new do |opts|
         opts.banner = "Usage: ./run_phlang.sh [options]"
 
-        opts.on("-fFILE", "--file=FILE", "File in bots/ to load from") do |v|
+        opts.on("-f FILE", "--file FILE", "Where to load bots from") do |v|
             options[:file].push(v)
         end
 
-        opts.on("-rROOM", "--room=ROOM", "Room to spawn bots in") do |v|
+        opts.on("-r ROOM", "--room ROOM", "Room to spawn bots in") do |v|
             options[:room] = v
         end
 
-        opts.on("-lLOGFILE", "--logfile=LOGFILE", "File to output logs to.") do |v|
+        opts.on("-l LOGFILE", "--log LOGFILE", "File to output logs to") do |v|
             options[:logging] = v
         end
 
-        opts.on("-sSECURITY", "--security=SECURITY", "Security setting to use.") do |v|
+        opts.on("-s SECURITY", "--security SECURITY", "Security setting to use") do |v|
             if v == "low"
                 options[:config] = PhlangBotConfig.new(MINIMAL_BUILTINS, FULL_TRIGGERS, FULL_RESPONSES, true)
             elsif v == "high"
