@@ -15,8 +15,8 @@ def main(opts)
 
         places = opts[:file]
         source = load_source(places)
-        loaded = load_bots(source, opts[:config])
-        if loaded.length > 0
+        if source.length > 0
+            loaded = load_bots(source, opts[:config])
             loaded.each do |b|
                 bs.add(b)
             end
@@ -26,7 +26,7 @@ def main(opts)
         end
 
         bs.each do |b|
-            r = Room.new(opts[:room])
+            r = Room.new(opts[:room], opts[:password])
             b.add_room(r)
         end
 
@@ -42,6 +42,7 @@ if __FILE__ == $0
     options = {
         :file => [],
         :room => "costofcivilization",
+        :password => nil,
         :logging => STDOUT,
         :config => nil
     }
@@ -56,6 +57,10 @@ if __FILE__ == $0
 
         opts.on("-r ROOM", "--room ROOM", "Room to spawn bots in") do |v|
             options[:room] = v
+        end
+
+        opts.on("-p PASSWORD", "--password PASSWORD", "Password for the room") do |v|
+            options[:password] = v
         end
 
         opts.on("-l LOGFILE", "--log LOGFILE", "File to output logs to") do |v|

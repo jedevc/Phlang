@@ -15,16 +15,17 @@ class Room
         return @conn != nil
     end
 
-    def initialize(room)
+    def initialize(room, password=nil)
         @nick = ""
 
         @conn = nil
         if room_exists?(room)
             @conn = Connection.new(room)
             @conn.onevent("ping-event") do |packet| ping_reply(packet) end
-            @conn.onevent("hello-event") do |packet| ready() end
+            @conn.onevent("hello-event") do |packet| ready(packet) end
             @conn.start()
         end
+        @password = password
 
         @timer = nil
     end
@@ -37,7 +38,10 @@ class Room
     end
 
     # Prepare things for rooms
-    def ready()
+    def ready(packet)
+        if packet["room_is_private"] and @password
+            @conn.send(make_packet("auth", {"type" => "passcode", "passcode" => @password}))
+        end
         send_nick(@nick)
     end
 

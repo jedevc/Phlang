@@ -71,7 +71,7 @@ class PhlangBot < Bot
     end
 
     def start_handle(&blk)
-        add_handle("hello-event") do |message, room|
+        add_handle("snapshot-event") do |message, room|
             next blk.call(room)
         end
     end
