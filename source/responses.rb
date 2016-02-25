@@ -55,7 +55,12 @@ class CreateResponse < Response
         if args.length >= 2
             nick = args[0]
             code = args.slice(1, args.length).join(" ")
-            bot.fork_new_bot(nick, code, room.name, packet["sender"]["name"])
+
+            conf = PhlangBotConfig.new(FULL_BUILTINS, MINIMAL_TRIGGERS, MINIMAL_RESPONSES)
+            nb = PhlangBot.new(nick, code, conf, packet["sender"]["name"])
+            r = Room.new(room.name)
+            nb.add_room(r)
+            bot.group.add(nb)
         end
         return false
     end

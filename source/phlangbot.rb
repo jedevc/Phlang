@@ -48,17 +48,6 @@ class PhlangBot < Bot
         return bot
     end
 
-    def fork_new_bot(nick, code, roomname, creator="local")
-        conf = PhlangBotConfig.new(FULL_BUILTINS, MINIMAL_TRIGGERS, MINIMAL_RESPONSES)
-
-        nb = PhlangBot.new(nick, code, conf, creator)
-
-        r = Room.new(roomname)
-        nb.add_room(r)
-
-        @group.add(nb)
-    end
-
     def msg_handle(&blk)
         add_handle("send-event") do |message, room|
             # Check that message was not triggered by bot
