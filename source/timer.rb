@@ -15,15 +15,7 @@ class Timer < EventGenerator
     public
     def onevent(type, &blk)
         super(type, &blk)
-
-        if @started
-            EM.add_timer(type) do
-                if @started
-                    blk.call()
-                    @callbacks[type].delete(blk)
-                end
-            end
-        end
+        start_timer(type, &blk)
     end
 
     # Start timer groups
@@ -34,12 +26,7 @@ class Timer < EventGenerator
 
         @callbacks.each_key do |k|
             @callbacks[k].each do |f|
-                EM.add_timer(k) do
-                    if @started
-                        f.call();
-                        @callbacks[k].delete(f)
-                    end
-                end
+                start_timer(k, &blk)
             end
         end
     end
@@ -49,5 +36,18 @@ class Timer < EventGenerator
         @started = false
 
         super()
+    end
+
+    private
+    def start_timer(target, &blk)
+        length = target - Time.now
+        if @started
+            EM.add_timer(length) do
+                if @started
+                    blk.call()
+                    @callbacks[target].delete(blk)
+                end
+            end
+        end
     end
 end

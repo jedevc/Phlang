@@ -58,7 +58,7 @@ class Room
             @timer.start()
         end
 
-        @timer.onevent(t, &blk)
+        @timer.onevent(Time.now + t, &blk)
     end
 
     # Identify by a nick in the room
