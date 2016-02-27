@@ -5,57 +5,54 @@ require 'eventmachine'
 
 class EventGenerator
     def initialize()
-        @callbacks = {}
-
-        @thread = nil  # Most of the time unused
+        @started = false
     end
 
     public
-    # Add a callback
-    def onevent(type, &blk)
-        if @callbacks.include?(type)
-            @callbacks[type].push(blk)
-        else
-            @callbacks[type] = [blk]
-        end
+    def onevent(*args, &blk)
     end
 
+    def start()
+        @started = true
+    end
+
+    def stop()
+        @started = false
+    end
+end
+
+class EMEventGenerator < EventGenerator
+    @@thread = nil
+    @@count = 0
+
+    public
     # Start the reactor if not already started
     def start()
-        if !EM.reactor_running?
-            @thread = Thread.new do
+        super()
+
+        @@count += 1
+
+        if !EM.reactor_running? and @@thread == nil
+            @@thread = Thread.new do
                 EM.run do end
             end
             sleep 1 until EM.reactor_running? # Make sure that EM is running
         end
     end
 
-    # Cleanup up various things
-    def stop()
-    end
-
-    # Kill the event machine and stop everything
-    def kill()
-        stop()
-        EM.stop_event_loop()
-        join()
-    end
-
-    protected
-    # Trigger an event, optionally with some data
-    def trigger(type, data=nil)
-        if @callbacks.include?(type)
-            @callbacks[type].each do |f|
-                f.call(data)
-            end
-        end
-    end
-
     private
     # Join reactor thread (must be closed first)
-    def join()
-        if @thread != nil && Thread.current != @thread
-            @thread.join()
+    def stop()
+        if @started
+            @@count -= 1
+
+            if @@count == 0
+                EM.stop_event_loop()
+                @@thread.join()
+                @@thread = nil
+            end
         end
+
+        super()
     end
 end

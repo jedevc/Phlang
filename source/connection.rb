@@ -27,12 +27,14 @@ def room_exists?(room)
 end
 
 # Simple connection to euphoria
-class Connection < EventGenerator
+class Connection < EMEventGenerator
     attr_reader :roomname
     attr_reader :status
 
     def initialize(room)
         super()
+
+        @callbacks = {}
 
         @roomname = room
         @status = :closed
@@ -44,13 +46,21 @@ class Connection < EventGenerator
     end
 
     public
+    def onevent(ptype, &blk)
+        if !@callbacks.has_key? ptype
+            @callbacks[ptype] = [blk]
+        else
+            @callbacks[ptype].push(block)
+        end
+    end
+
     # Send a Ruby hash through the connection formatted as JSON.
     def send(packet)
         if @status == :open
             data = JSON.dump(packet)
-            @mutex.lock()
-            @wscon.send(data)
-            @mutex.unlock()
+            @mutex.synchronize do
+                @wscon.send(data)
+            end
             return true
         end
         return false
@@ -69,7 +79,9 @@ class Connection < EventGenerator
     # Disconnect from euphoria
     def stop()
         @status = :closing
-        @wscon.close(1000)
+        @mutex.synchronize do
+            @wscon.close(1000)
+        end
 
         super()
     end
@@ -77,7 +89,9 @@ class Connection < EventGenerator
     private
     # Low level connect to euphoria and manage disconnects
     def em_connect()
-        @wscon = WebSocket::EventMachine::Client.connect(:uri => @wsuri)
+        @mutex.synchronize do
+            @wscon = WebSocket::EventMachine::Client.connect(:uri => @wsuri)
+        end
         @wscon.comm_inactivity_timeout = 60
 
         @wscon.onopen do
@@ -88,7 +102,11 @@ class Connection < EventGenerator
             EM.defer do
                 packet = JSON.load(data)
                 if @status == :open
-                    trigger(packet["type"], packet["data"])
+                    if @callbacks.has_key? packet["type"]
+                        @callbacks[packet["type"]].each do |c|
+                            c.call(packet["data"])
+                        end
+                    end
                 end
             end
         end

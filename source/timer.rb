@@ -5,16 +5,13 @@ require 'eventmachine'
 
 require_relative 'eventgen'
 
-class Timer < EventGenerator
+class Timer < EMEventGenerator
     def initialize()
-        super()
-
-        @started = false
+        @unstarted = []
     end
 
     public
     def onevent(type, &blk)
-        super(type, &blk)
         start_timer(type, &blk)
     end
 
@@ -22,20 +19,10 @@ class Timer < EventGenerator
     def start()
         super()
 
-        @started = true
-
-        @callbacks.each_key do |k|
-            @callbacks[k].each do |f|
-                start_timer(k, &blk)
-            end
+        @unstarted.each do |unst|
+            endtime, func = unst
+            start_timer(endtime, &func)
         end
-    end
-
-    # Stop timer groups
-    def stop()
-        @started = false
-
-        super()
     end
 
     private
@@ -45,9 +32,10 @@ class Timer < EventGenerator
             EM.add_timer(length) do
                 if @started
                     blk.call()
-                    @callbacks[target].delete(blk)
                 end
             end
+        else
+            @unstarted.push([target, blk])
         end
     end
 end
