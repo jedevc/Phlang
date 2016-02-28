@@ -4,6 +4,8 @@ require_relative 'bot'
 require_relative 'parser'
 
 class PhlangBot < Bot
+    attr_reader :config
+
     def initialize(name, code, config, creator="local")
         super(name)
         @config = config
@@ -48,23 +50,6 @@ class PhlangBot < Bot
         return bot
     end
 
-    def msg_handle(&blk)
-        add_handle("send-event") do |message, room|
-            # Check that message was not triggered by bot
-            if message and (message["sender"]["id"].split(':')[0] != "bot" || @config.botinteraction)
-                next blk.call(message, room)
-            else
-                next nil
-            end
-        end
-    end
-
-    def start_handle(&blk)
-        add_handle("snapshot-event") do |message, room|
-            next blk.call(room)
-        end
-    end
-
     def variables(room)
         if !@variables.has_key?(room)
             @variables[room] = {}
@@ -73,7 +58,7 @@ class PhlangBot < Bot
     end
 
     def admin_commands()
-        msg_handle do |message, room|
+        add_handle("send-event") do |message, room|
             name = room.nick
             if /^!kill @#{name}$/.match(message["content"])
                 room.send_message("/me is exiting.", message["id"])
@@ -97,7 +82,7 @@ class PhlangBot < Bot
     end
 
     def util_commands()
-        msg_handle do |message, room|
+        add_handle("send-event") do |message, room|
             name = room.nick
             if /^!sendbot @#{name} &(\S+)$/.match(message["content"])
                 newroom = /^!sendbot @#{name} &(\S+)$/.match(message["content"])[1]
@@ -111,7 +96,7 @@ class PhlangBot < Bot
     end
 
     def info_commands()
-        msg_handle do |message, room|
+        add_handle("send-event") do |message, room|
             name = room.nick
             content = message["content"]
             if /^!ping(?: @#{name})?$/.match(content)

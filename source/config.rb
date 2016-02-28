@@ -6,21 +6,17 @@ class PhlangBotConfig
     attr_reader :allowed_triggers
     attr_reader :allowed_responses
 
-    attr_reader :botinteraction
-
-    def initialize(builtins, trigs, resps, botinteraction=false)
+    def initialize(builtins, trigs, resps)
         @builtins = builtins
         @allowed_triggers = trigs
         @allowed_responses = resps
-        @botinteraction = botinteraction
     end
 
     def to_h()
         return {
             "builtins" => @builtins.to_h,
             "allowed_triggers" => @allowed_triggers,
-            "allowed_responses" => @allowed_responses,
-            "botinteraction" => @botinteraction
+            "allowed_responses" => @allowed_responses
         }
     end
 
@@ -28,8 +24,7 @@ class PhlangBotConfig
         return PhlangBotConfig.new(
             BuiltinConfig.from_h(h["builtins"]),
             h["allowed_triggers"],
-            h["allowed_responses"],
-            h["botinteraction"]
+            h["allowed_responses"]
         )
     end
 end

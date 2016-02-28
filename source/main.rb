@@ -69,9 +69,9 @@ if __FILE__ == $0
 
         opts.on("-s SECURITY", "--security SECURITY", "Security setting to use") do |v|
             if v == "low"
-                options[:config] = PhlangBotConfig.new(MINIMAL_BUILTINS, FULL_TRIGGERS, FULL_RESPONSES, true)
+                options[:config] = PhlangBotConfig.new(MINIMAL_BUILTINS, FULL_TRIGGERS, FULL_RESPONSES)
             elsif v == "high"
-                options[:config] = PhlangBotConfig.new(FULL_BUILTINS, MINIMAL_TRIGGERS, MINIMAL_RESPONSES, true)
+                options[:config] = PhlangBotConfig.new(FULL_BUILTINS, MINIMAL_TRIGGERS, MINIMAL_RESPONSES)
             end
         end
     end.parse!
