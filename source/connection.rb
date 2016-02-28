@@ -47,15 +47,15 @@ class Connection < EMEventGenerator
 
     public
     def onevent(ptype, &blk)
-        if !@callbacks.has_key? ptype
-            @callbacks[ptype] = [blk]
+        if @callbacks.has_key? ptype
+            @callbacks[ptype].push(blk)
         else
-            @callbacks[ptype].push(block)
+            @callbacks[ptype] = [blk]
         end
     end
 
     # Send a Ruby hash through the connection formatted as JSON.
-    def send(packet)
+    def send_data(packet)
         if @status == :open
             data = JSON.dump(packet)
             @mutex.synchronize do

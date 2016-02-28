@@ -21,6 +21,42 @@ class EventGenerator
     end
 end
 
+class EventQueue < EventGenerator
+    def initialize(basegen)
+        @base = basegen
+
+        @callbacks = {}
+    end
+
+    public
+    def onevent(t, &blk)
+        if !@callbacks.include? t
+            @base.onevent(t) do |*args|
+                @callbacks[t].each do |c|
+                    if c.call(*args); break; end
+                end
+            end
+            @callbacks[t] = []
+        end
+        @callbacks[t].push(blk)
+    end
+
+    def start()
+        super()
+        @base.start()
+    end
+
+    def stop()
+        super()
+        @base.stop()
+    end
+
+    # Literally everything else
+    def method_missing(m, *args, &blk)
+        @base.method(m).call(*args, &blk)
+    end
+end
+
 class EMEventGenerator < EventGenerator
     @@thread = nil
     @@count = 0

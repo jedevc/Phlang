@@ -41,7 +41,7 @@ class TimerTrigger < Trigger
     def perform(response, args, packet, room, bot)
         reg = Regexp.new(args.slice(1, args.length).join).match(packet["content"])
         if reg
-            room.intime(args[0].to_i) do
+            room.timer.onevent(Time.now + args[0].to_i) do
                 response.call(reg, packet, room, bot)
             end
         end
@@ -82,7 +82,7 @@ class PushTimerTrigger < Trigger
     private
     def add_time(room, delay, &blk)
         @ending[room] = Time.now + delay
-        room.intime(delay) do
+        room.timer.onevent(@ending[room]) do
             if @ending[room] < Time.now
                 blk.call()
                 @ending.delete(room)

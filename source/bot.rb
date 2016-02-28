@@ -22,9 +22,9 @@ class Bot
 
         # Add handlers to room
         @handles.each_key do |type|
-            room.onpacket(type) do |packet|
-                @handles[type].each do |h|
-                    if h.call(packet, room); break; end
+            @handles[type].each do |h|
+                room.connection.onevent(type) do |packet|
+                    h.call(packet, room)
                 end
             end
         end
@@ -54,29 +54,18 @@ class Bot
         return @rooms.map {|r| r.name}
     end
 
-    # Manually launch a trigger - useful for custom triggers and stuff
-    def trigger(type)
-        if @handles.has_key?(type)
-            @handles[type].each do |h|
-                h.call()
-            end
-        end
-    end
-
     # Add a handler for a certain event type
     def add_handle(type, &blk)
-        # Create the handler if it doesn't already exist
-        if @handles[type] == nil
-            @handles[type] = []
-            @rooms.each do |r|
-                r.onpacket(type) do |packet|
-                    @handles[type].each do |h|
-                        if h.call(packet, r); break; end
-                    end
-                end
-            end
+        if @handles.has_key? type
+            @handles[type].push(blk)
+        else
+            @handles[type] = [blk]
         end
 
-        @handles[type].push(blk)
+        @rooms.each do |r|
+            r.connection.onevent(type) do |packet|
+                blk.call(packet, r)
+            end
+        end
     end
 end
