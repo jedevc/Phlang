@@ -50,8 +50,8 @@ class TimerTrigger < Trigger
 end
 
 class PushTimerTrigger < Trigger
-    def initialize(args)
-        super(args)
+    def initialize(*args)
+        super(*args)
         @ending = {}
         @last = {}
     end
@@ -90,5 +90,32 @@ class PushTimerTrigger < Trigger
                 add_time(room, @ending[room] - Time.now, &blk)
             end
         end
+    end
+end
+
+class EveryTrigger < Trigger
+    def initialize(*args)
+        super(*args)
+
+        @counts = 0
+    end
+
+    def add(bot, response)
+        bot.add_handle("send-event") do |m, r|
+            next trigger(response, m, r, bot)
+        end
+    end
+
+    def perform(response, args, packet, room, bot)
+        reg = Regexp.new(args.slice(1, args.length).join).match(packet["content"])
+        if reg
+            @counts += 1
+        end
+
+        if @counts >= args[0].to_i
+            response.call(reg, packet, room, bot)
+            @counts = 0
+        end
+        return false
     end
 end

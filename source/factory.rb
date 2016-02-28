@@ -6,7 +6,8 @@ class TriggerFactory
         "start" => lambda do |args| return StartTrigger.new(args) end,
         "msg" => lambda do |args| return MessageTrigger.new(args) end,
         "timer" => lambda do |args| return TimerTrigger.new(args) end,
-        "ptimer" => lambda do |args| return PushTimerTrigger.new(args) end
+        "ptimer" => lambda do |args| return PushTimerTrigger.new(args) end,
+        "every" => lambda do |args| return EveryTrigger.new(args) end
     }
 
     def self.build(t, args)
