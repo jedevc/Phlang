@@ -57,8 +57,16 @@ class PhlangBot < Bot
         return @variables[room]
     end
 
+    def connection_event(name, &blk)
+        new_room do |room|
+            room.connection.onevent(name) do |message|
+                blk.call(message, room)
+            end
+        end
+    end
+
     def admin_commands()
-        add_handle("send-event") do |message, room|
+        connection_event("send-event") do |message, room|
             name = room.nick
             if /^!kill @#{name}$/.match(message["content"])
                 room.send_message("/me is exiting.", message["id"])
@@ -82,7 +90,7 @@ class PhlangBot < Bot
     end
 
     def util_commands()
-        add_handle("send-event") do |message, room|
+        connection_event("send-event") do |message, room|
             name = room.nick
             if /^!sendbot @#{name} &(\S+)$/.match(message["content"])
                 newroom = /^!sendbot @#{name} &(\S+)$/.match(message["content"])[1]
@@ -96,7 +104,7 @@ class PhlangBot < Bot
     end
 
     def info_commands()
-        add_handle("send-event") do |message, room|
+        connection_event("send-event") do |message, room|
             name = room.nick
             content = message["content"]
             if /^!ping(?: @#{name})?$/.match(content)

@@ -10,7 +10,7 @@ class Bot
         @basename = name
         @rooms = []
 
-        @handles = {}
+        @onnew = []
     end
 
     public
@@ -20,13 +20,8 @@ class Bot
             return false
         end
 
-        # Add handlers to room
-        @handles.each_key do |type|
-            @handles[type].each do |h|
-                room.connection.onevent(type) do |packet|
-                    h.call(packet, room)
-                end
-            end
+        @onnew.each do |on|
+            on.call(room)
         end
 
         room.send_nick(@basename)
@@ -54,18 +49,12 @@ class Bot
         return @rooms.map {|r| r.name}
     end
 
-    # Add a handler for a certain event type
-    def add_handle(type, &blk)
-        if @handles.has_key? type
-            @handles[type].push(blk)
-        else
-            @handles[type] = [blk]
+    # Add a callback for when a room is added
+    def new_room(&blk)
+        @rooms.each do |r|
+            blk.call(r)
         end
 
-        @rooms.each do |r|
-            r.connection.onevent(type) do |packet|
-                blk.call(packet, r)
-            end
-        end
+        @onnew.push(blk)
     end
 end

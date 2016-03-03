@@ -2,7 +2,7 @@ require_relative 'code'
 
 class StartTrigger < Trigger
     def add(bot, response)
-        bot.add_handle("snapshot-event") do |m, r|
+        bot.connection_event("snapshot-event") do |m, r|
             next trigger(response, {}, r, bot)
         end
     end
@@ -15,7 +15,7 @@ end
 
 class MessageTrigger < Trigger
     def add(bot, response)
-        bot.add_handle("send-event") do |m, r|
+        bot.connection_event("send-event") do |m, r|
             next trigger(response, m, r, bot)
         end
     end
@@ -33,7 +33,7 @@ end
 
 class TimerTrigger < Trigger
     def add(bot, response)
-        bot.add_handle("send-event") do |m, r|
+        bot.connection_event("send-event") do |m, r|
             next trigger(response, m, r, bot)
         end
     end
@@ -58,7 +58,7 @@ class PushTimerTrigger < Trigger
 
     public
     def add(bot, response)
-        bot.add_handle("send-event") do |m, r|
+        bot.connection_event("send-event") do |m, r|
             next trigger(response, m, r, bot)
         end
     end
@@ -101,7 +101,7 @@ class EveryTrigger < Trigger
     end
 
     def add(bot, response)
-        bot.add_handle("send-event") do |m, r|
+        bot.connection_event("send-event") do |m, r|
             next trigger(response, m, r, bot)
         end
     end
