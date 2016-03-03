@@ -70,21 +70,21 @@ class EMEventGenerator < EventGenerator
 
         if !EM.reactor_running? and @@thread == nil
             @@thread = Thread.new do
-                EM.run do end
+                EM.run
             end
+
             sleep 1 until EM.reactor_running? # Make sure that EM is running
         end
     end
 
-    private
-    # Join reactor thread (must be closed first)
+    # Stop the event generator
     def stop()
         if @started
             @@count -= 1
 
-            if @@count == 0
+            if @@count == 0 and Thread.current == Thread.main
                 EM.stop_event_loop()
-                @@thread.join()
+                @@thread.join
                 @@thread = nil
             end
         end

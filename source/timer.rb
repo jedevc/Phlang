@@ -25,11 +25,6 @@ class Timer < EMEventGenerator
         end
     end
 
-    # Stop timer groups
-    def stop()
-        super()
-    end
-
     private
     def start_timer(target, &blk)
         length = target - Time.now
