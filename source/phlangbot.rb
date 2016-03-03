@@ -65,6 +65,14 @@ class PhlangBot < Bot
         end
     end
 
+    def broadcast_event(&blk)
+        new_room do |room|
+            room.broadcast.onevent do |message|
+                blk.call(message, room)
+            end
+        end
+    end
+
     def admin_commands()
         connection_event("send-event") do |message, room|
             name = room.nick

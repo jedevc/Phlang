@@ -7,10 +7,9 @@ msg "^!phlang list$"
 list
 
 msg "^!phlang save$"
-set snapname %(time)
 log "Creating snapshot with name " _ %(time)
 reply "Creating snapshot with name " _ %(time)
-save %(snapname)
+save %(time)
 
 msg "^!phlang recover ([\s\S]*)$"
 log "Recovering snapshot from " _ \(1)

@@ -1,5 +1,6 @@
 require_relative 'connection'
 require_relative 'timer'
+require_relative 'broadcast'
 
 require_relative 'logservice'
 
@@ -9,6 +10,7 @@ class Room
 
     attr_accessor :connection
     attr_accessor :timer
+    attr_accessor :broadcast
 
     def initialize(room, password=nil)
         @nick = ""
@@ -25,6 +27,9 @@ class Room
 
         @timer = Timer.new()
         @timer.start()
+
+        @broadcast = Broadcaster.new()
+        @broadcast.start()
     end
 
     def name
@@ -73,9 +78,8 @@ class Room
     # Close connections and timers
     def disconnect()
         @connection.stop()
-        if @timer
-            @timer.stop()
-        end
+        @timer.stop()
+        @broadcast.stop()
         LogService.get.debug "@#{@nick}: disconnected"
     end
 end

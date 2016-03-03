@@ -3,7 +3,7 @@ require_relative 'code'
 require_relative 'logservice'
 
 class SendResponse < Response
-    def perform(args, packet, room, bot)
+    def perform(args, message, room, bot)
         args.each do |a|
             room.send_message(a)
         end
@@ -12,23 +12,32 @@ class SendResponse < Response
 end
 
 class ReplyResponse < Response
-    def perform(args, packet, room, bot)
+    def perform(args, message, room, bot)
         args.each do |a|
-            room.send_message(a, packet["id"])
+            room.send_message(a, message.id)
+        end
+        return false
+    end
+end
+
+class BroadcastResponse < Response
+    def perform(args, message, room, bot)
+        args.each do |a|
+            room.broadcast.trigger(a)
         end
         return false
     end
 end
 
 class NickResponse < Response
-    def perform(args, packet, room, bot)
+    def perform(args, message, room, bot)
         room.send_nick(args[-1])
         return false
     end
 end
 
 class SetResponse < Response
-    def perform(args, packet, room, bot)
+    def perform(args, message, room, bot)
         if args.length == 2
             var = args[0]
             val = args[1]
@@ -39,7 +48,7 @@ class SetResponse < Response
 end
 
 class BreakResponse < Response
-    def perform(args, packet, room, bot)
+    def perform(args, message, room, bot)
         if args.length == 2
             first = args[0]
             second = args[1]
@@ -51,13 +60,13 @@ class BreakResponse < Response
 end
 
 class CreateResponse < Response
-    def perform(args, packet, room, bot)
+    def perform(args, message, room, bot)
         if args.length >= 2
             nick = args[0]
             code = args.slice(1, args.length).join(" ")
 
             conf = PhlangBotConfig.new(FULL_BUILTINS, MINIMAL_TRIGGERS, MINIMAL_RESPONSES)
-            nb = PhlangBot.new(nick, code, conf, packet["sender"]["name"])
+            nb = PhlangBot.new(nick, code, conf, message.sender)
             r = Room.new(room.name)
             nb.add_room(r)
             bot.group.add(nb)
@@ -67,7 +76,7 @@ class CreateResponse < Response
 end
 
 class LogResponse < Response
-    def perform(args, packet, room, bot)
+    def perform(args, message, room, bot)
         message = args.join("")
         LogService.get.info "@#{room.nick} logged: #{message}"
         return false
@@ -75,20 +84,20 @@ class LogResponse < Response
 end
 
 class ListResponse < Response
-    def perform(args, packet, room, bot)
-        message = ""
+    def perform(args, message, room, bot)
+        msg = ""
         bot.group.each do |b|
             name = b.basename
             rooms = b.room_names.map {|r| "&#{r}"}
-            message += "@#{name} in [#{rooms.join(", ")}]\n"
+            msg += "@#{name} in [#{rooms.join(", ")}]\n"
         end
-        room.send_message(message, packet["id"])
+        room.send_message(msg, message.id)
         return false
     end
 end
 
 class SaveResponse < Response
-    def perform(args, packet, room, bot)
+    def perform(args, message, room, bot)
         if args.length > 0
             bot.group.save(args[0])
         end
@@ -97,7 +106,7 @@ class SaveResponse < Response
 end
 
 class RecoverResponse < Response
-    def perform(args, packet, room, bot)
+    def perform(args, message, room, bot)
         if args.length > 0
             bot.group.recover(args[0])
         else

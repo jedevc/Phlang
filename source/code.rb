@@ -14,11 +14,12 @@ class Response
         @args = args
     end
 
-    def respond(trigdata, packet, room, bot)
-        extravars = {"time" => Time.now.utc.strftime("%Y-%m-%d %H:%M:%S")}
-        if packet.has_key?("sender")
-            extravars["sender"] = packet["sender"]["name"]
-        end
+    def respond(trigdata, message, room, bot)
+        extravars = {
+            "time" => message.time,
+            "sender" => message.sender
+        }
+
         funcs = {
             "\\" => lambda {|a| trigdata[a.to_i]},
             "%" => lambda {|a| lookup(a, bot.variables(room), extravars)},
@@ -29,10 +30,10 @@ class Response
         nargs = Expression.new(@args, context).calculate
         nargs.map! {|e| e.to_s}
 
-        perform(nargs, packet, room, bot)
+        perform(nargs, message, room, bot)
     end
 
-    def perform(args, packet, room, bot)
+    def perform(args, message, room, bot)
     end
 end
 
@@ -44,7 +45,7 @@ class Trigger
     def add(bot, response)
     end
 
-    def trigger(response, packet, room, bot)
+    def trigger(response, message, room, bot)
         funcs = {
             "%" => lambda {|a| lookup(a, bot.variables(room))}
         }
@@ -53,9 +54,9 @@ class Trigger
         nargs = Expression.new(@args, context).calculate
         nargs.map! {|e| e.to_s}
 
-        return perform(response, nargs, packet, room, bot)
+        return perform(response, nargs, message, room, bot)
     end
 
-    def perform(response, args, packet, room, bot)
+    def perform(response, args, message, room, bot)
     end
 end
