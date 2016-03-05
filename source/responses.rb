@@ -67,7 +67,7 @@ class CreateResponse < Response
 
             conf = PhlangBotConfig.new(FULL_BUILTINS, MINIMAL_TRIGGERS, MINIMAL_RESPONSES)
             nb = PhlangBot.new(nick, code, conf, message.sender)
-            r = Room.new(room.name)
+            r = Room.new(room.name, room.password)
             nb.add_room(r)
             bot.group.add(nb)
         end

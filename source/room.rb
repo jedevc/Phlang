@@ -8,6 +8,9 @@ require_relative 'logservice'
 class Room
     attr_reader :nick
 
+    attr_reader :name
+    attr_reader :password
+
     attr_accessor :connection
     attr_accessor :timer
     attr_accessor :broadcast
@@ -22,7 +25,10 @@ class Room
             @connection.onevent("hello-event") do |packet| ready(packet) end
             @connection.start()
         end
+
+        @name = room
         @password = password
+
         @connected = false
 
         @timer = Timer.new()
@@ -30,10 +36,6 @@ class Room
 
         @broadcast = Broadcaster.new()
         @broadcast.start()
-    end
-
-    def name
-        return @connection.roomname
     end
 
     def exists
