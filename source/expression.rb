@@ -40,7 +40,7 @@ class ShuntContext
     def initialize(funcs={})
         basics = [
             ['*', lambda {|a, b| a.to_i * b.to_i}],
-            ['/', lambda {|a, b| a.to_i / b.to_i}],
+            ['/', lambda {|a, b| a.to_i / b.to_i if b.to_i != 0}],
             ['+', lambda {|a, b| a.to_i + b.to_i}],
             ['-', lambda {|a, b| a.to_i - b.to_i}],
             ['_', lambda {|a, b| a.to_s + b.to_s}]
@@ -105,7 +105,7 @@ class Expression < RPN
             elsif t == context.right_paren  # Right parenthesis
                 while stack[-1] != context.left_paren
                     if stack.length == 0
-                        raise RuntimeError, "Matching paren could not be found."
+                        raise RuntimeError, "matching left paren could not found"
                     end
                     output.push(stack.pop())
                 end
@@ -122,7 +122,11 @@ class Expression < RPN
 
         # Dump stack to output
         while stack.length > 0
-            output.push(stack.pop())
+            sym = stack.pop()
+            if sym == context.left_paren
+                raise RuntimeError, "matching right paren not found"
+            end
+            output.push(sym)
         end
 
         super(output, context.operators.merge(context.functions))
