@@ -32,8 +32,7 @@ def main(opts)
 
         sleep
     rescue => e
-        backtrace = (e.backtrace.map {|l| "\t#{l}"}).join("\n")
-        LogService.get.fatal "unhandled exception: #{e.inspect} in \n#{backtrace}"
+        LogService.get.fatal "unhandled exception: #{e.inspect} in\n#{e.backtrace[0]}"
     end
 end
 

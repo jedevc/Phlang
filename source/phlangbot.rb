@@ -1,3 +1,5 @@
+require_relative 'logservice'
+
 require_relative 'room'
 require_relative 'bot'
 
@@ -24,7 +26,14 @@ class PhlangBot < Bot
 
     def load_code(blocks)
         blocks.each do |b|
-            tr = b.export(@config.allowed_triggers, @config.allowed_responses)
+            tr = nil
+
+            begin
+                tr = b.export(@config.allowed_triggers, @config.allowed_responses)
+            rescue RuntimeError => e
+                LogService.get.warn "error parsing code: #{e.inspect}"
+            end
+
             if tr
                 trigger, response = tr
                 trigger.add(self, response)

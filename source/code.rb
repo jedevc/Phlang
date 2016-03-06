@@ -11,25 +11,27 @@ end
 
 class Response
     def initialize(args)
-        @args = args
+        @extravars = {}
+        @funcs = {
+            "?" => lambda {|*args| args.sample},
+            "%" => lambda {|a| lookup(a, @extravars)},
+            "\\" => lambda {|a| nil}
+        }
+        context = ShuntContext.new(@funcs)
+
+        @args = Expression.new(args, context)
     end
 
     def respond(trigdata, message, room, bot)
-        extravars = {
-            "time" => message.time,
-            "sender" => message.sender
-        }
+        @extravars["time"] = message.time
+        @extravars["sender"] = message.sender
 
-        funcs = {
-            "\\" => lambda {|a| trigdata[a.to_i]},
-            "%" => lambda {|a| lookup(a, bot.variables(room), extravars)},
-            "?" => lambda {|*args| args.sample}
-        }
-        context = ShuntContext.new(funcs)
+        # HACK!
+        @funcs["%"] = lambda {|a| lookup(a, @extravars, bot.variables(room))}
+        @funcs["\\"] = lambda {|a| trigdata[a.to_i]}
 
-        nargs = Expression.new(@args, context).calculate
+        nargs = @args.calculate
         nargs.map! {|e| e.to_s}
-
         perform(nargs, message, room, bot)
     end
 
@@ -39,19 +41,20 @@ end
 
 class Trigger
     def initialize(args)
-        @args = args
+        @funcs = {
+            "%" => lambda {|a| lookup(a, bot.variables(room))}
+        }
+
+        context = ShuntContext.new(@funcs)
+
+        @args = Expression.new(args, context)
     end
 
     def add(bot, response)
     end
 
     def trigger(response, message, room, bot)
-        funcs = {
-            "%" => lambda {|a| lookup(a, bot.variables(room))}
-        }
-        context = ShuntContext.new(funcs)
-
-        nargs = Expression.new(@args, context).calculate
+        nargs = @args.calculate
         nargs.map! {|e| e.to_s}
 
         return perform(response, nargs, message, room, bot)
