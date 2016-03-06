@@ -116,6 +116,8 @@ class PhlangBot < Bot
                 else
                     room.send_message("/me could not find &#{newroom}.", message["id"])
                 end
+            elsif /^!code @#{name}/.match(message["content"])
+                room.send_message(@code, message["id"])
             end
         end
     end
