@@ -3,29 +3,48 @@ require_relative 'tokenizer'
 COUNT_SEPERATOR = '#'
 
 class RPN
-    def initialize(tokens, funcs)
+    def initialize(tokens, *funcs)
         @tokens = tokens
         @funcs = funcs
     end
 
+    public
     def calculate()
         stack = []
         @tokens.each do |t|
-            if @funcs.has_key?(t)
-                vals = stack.pop(@funcs[t].parameters.length)
-                ret = @funcs[t].call(*vals)
+            if has_func?(t)
+                f = get_func(t)
+
+                vals = stack.pop(f.parameters.length)
+
+                ret = f.call(*vals)
                 stack.push(ret)
-            elsif @funcs.has_key?(t.split(COUNT_SEPERATOR)[0])
+            elsif has_func?(t.split(COUNT_SEPERATOR)[0])
                 name, args = t.split(COUNT_SEPERATOR)
                 args = args.to_i
                 vals = stack.pop(args)
-                ret = @funcs[name].call(*vals)
+
+                ret = get_func(name).call(*vals)
                 stack.push(ret)
             else
                 stack.push(t)
             end
         end
         return stack
+    end
+
+    private
+    def get_func(func)
+        @funcs.each do |funclist|
+            if funclist.has_key? func
+                return funclist[func]
+            end
+        end
+        return nil
+    end
+
+    def has_func?(func)
+        return get_func(func) != nil
     end
 end
 
@@ -129,6 +148,6 @@ class Expression < RPN
             output.push(sym)
         end
 
-        super(output, context.operators.merge(context.functions))
+        super(output, context.operators, context.functions)
     end
 end
