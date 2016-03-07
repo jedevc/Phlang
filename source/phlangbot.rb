@@ -85,18 +85,18 @@ class PhlangBot < Bot
     def admin_commands()
         connection_event("send-event") do |message, room|
             name = room.nick
-            if /^!kill @#{name}$/.match(message["content"])
+            if /\A!kill @#{name}\Z/.match(message["content"])
                 room.send_message("/me is exiting.", message["id"])
                 remove_room(room)
                 if room_names.length == 0
                     @group.remove(self)
                 end
                 next true
-            elsif !@paused.include?(room) && /^!pause @#{name}$/.match(message["content"])
+            elsif !@paused.include?(room) && /\A!pause @#{name}\Z/.match(message["content"])
                 room.send_message("/me is now paused.", message["id"])
                 @paused.push(room)
                 next true
-            elsif @paused.include?(room) && /^!restore @#{name}$/.match(message["content"])
+            elsif @paused.include?(room) && /\A!restore @#{name}\Z/.match(message["content"])
                 room.send_message("/me is now restored.", message["id"])
                 @paused.delete(room)
                 next true
@@ -109,14 +109,14 @@ class PhlangBot < Bot
     def util_commands()
         connection_event("send-event") do |message, room|
             name = room.nick
-            if /^!sendbot @#{name} &(\S+)$/.match(message["content"])
+            if /\A!sendbot @#{name} &(\S+)\Z/.match(message["content"])
                 newroom = /^!sendbot @#{name} &(\S+)$/.match(message["content"])[1]
                 if add_room(Room.new(newroom))
                     room.send_message("/me has been sent to &#{newroom}.", message["id"])
                 else
                     room.send_message("/me could not find &#{newroom}.", message["id"])
                 end
-            elsif /^!code @#{name}/.match(message["content"])
+            elsif /\A!code @#{name}\Z/.match(message["content"])
                 room.send_message(@code, message["id"])
             end
         end
@@ -126,16 +126,16 @@ class PhlangBot < Bot
         connection_event("send-event") do |message, room|
             name = room.nick
             content = message["content"]
-            if /^!ping(?: @#{name})?$/.match(content)
+            if /\A!ping(?: @#{name})?\Z/.match(content)
                 room.send_message("Pong!", message["id"])
                 next true
-            elsif /^!help @#{name}$/.match(content)
+            elsif /\A!help @#{name}\Z/.match(content)
                 room.send_message(
                     "@#{@basename} is a bot created by '#{@creator}' using a top secret project.\n\n" \
                     "@#{@basename} responds to !ping, !help, !kill, !pause (and !restore)." \
                 , message["id"])
                 next true
-            elsif /^!help$/.match(content)
+            elsif /\A!help\Z/.match(content)
                 room.send_message("#{@basename} is a bot created by '#{@creator}'.", message["id"])
                 next true
             end

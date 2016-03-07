@@ -1,28 +1,28 @@
-msg "^!phlang create @(\S*) ([\s\S]*)$"
+msg "\A!phlang create @(\S*) ([\s\S]*)\Z"
 create \(1) \(2)
 reply "Created @" _ \(1)
 log "Created @" _ \(1)
 
-msg "^!phlang list$"
+msg "\A!phlang list\Z"
 list
 
-msg "^!phlang save$"
+msg "\A!phlang save\Z"
 log "Creating snapshot with name " _ %(time)
 reply "Creating snapshot with name " _ %(time)
 save %(time)
 
-msg "^!phlang recover ([\s\S]*)$"
+msg "\A!phlang recover ([\s\S]*)\Z"
 log "Recovering snapshot from " _ \(1)
 recover \(1)
 
-msg "^!phlang recover$"
+msg "\A!phlang recover\Z"
 log "Recovering latest snapshot."
 recover
 
-msg "^!help$"
+msg "\A!help\Z"
 reply "Create bots using phlang."
 
-msg "^!help @PhlangBot$"
+msg "\A!help @PhlangBot\Z"
 reply "This is the bot help for @PhlangBot.
 
 :warning: Help coming soon...
