@@ -16,7 +16,7 @@ def main(opts)
         places = opts[:file]
         source = load_source(places)
         if source.length > 0
-            loaded = load_bots(source, opts[:config])
+            loaded = load_bots(source, opts[:creator], opts[:config])
             loaded.each do |b|
                 bs.add(b)
             end
@@ -43,6 +43,7 @@ if __FILE__ == $0
         :room => "costofcivilization",
         :password => nil,
         :logging => STDOUT,
+        :creator => "local",
         :config => nil
     }
 
@@ -64,6 +65,10 @@ if __FILE__ == $0
 
         opts.on("-l LOGFILE", "--log LOGFILE", "File to output logs to") do |v|
             options[:logging] = v
+        end
+
+        opts.on("-c CREATOR", "--creator CREATOR", "Who the bot should say their creator is") do |v|
+            options[:creator] = v
         end
 
         opts.on("-s SECURITY", "--security SECURITY", "Security setting to use") do |v|

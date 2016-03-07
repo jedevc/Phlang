@@ -8,7 +8,7 @@ require_relative 'parser'
 class PhlangBot < Bot
     attr_reader :config
 
-    def initialize(name, code, config, creator="local")
+    def initialize(name, code, creator, config)
         super(name)
         @config = config
 
@@ -56,7 +56,7 @@ class PhlangBot < Bot
     end
 
     def self.from_h(h)
-        bot = PhlangBot.new(h["nick"], h["code"], PhlangBotConfig.from_h(h["config"]), h["creator"])
+        bot = PhlangBot.new(h["nick"], h["code"], h["creator"], PhlangBotConfig.from_h(h["config"]))
         h["rooms"].each do |r|
             bot.add_room(Room.new(r))
         end
@@ -150,6 +150,9 @@ class PhlangBot < Bot
                     next true
                 elsif /\A!help\Z/.match(content)
                     room.send_message("#{@basename} is a bot created by '#{@creator}'.", message["id"])
+                    next true
+                elsif /\A!creator @#{name}\Z/.match(message["content"])
+                    room.send_message(@creator, message["id"])
                     next true
                 end
             end

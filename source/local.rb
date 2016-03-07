@@ -20,14 +20,14 @@ def load_source(places)
     return sources
 end
 
-def load_bots(source, conf=nil)
+def load_bots(source, creator, conf=nil)
     if conf == nil
         conf = PhlangBotConfig.new(MINIMAL_BUILTINS, FULL_TRIGGERS, FULL_RESPONSES)
     end
 
     bots = []
     source.each_key do |k|
-        b = PhlangBot.new(k, source[k], conf)
+        b = PhlangBot.new(k, source[k], creator, conf)
         bots.push(b)
     end
     return bots
