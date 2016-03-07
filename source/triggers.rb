@@ -84,13 +84,13 @@ class PushTimerTrigger < Trigger
     end
 
     def perform(response, args, message, room, bot)
-        reg = Regexp.new(@args.slice(1, @args.length).join).match(message.content)
+        reg = Regexp.new(args.slice(1, args.length).join).match(message.content)
         if reg
             if @ending.include?(room)
-                @ending[room] = Time.now + @args[0].to_i
+                @ending[room] = Time.now + args[0].to_i
                 @last[room] = message
             else
-                add_time(room, @args[0].to_i) do
+                add_time(room, args[0].to_i) do
                     response.call(reg, @last[room], room, bot)
                 end
                 @last[room] = message
