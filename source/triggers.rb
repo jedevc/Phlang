@@ -62,7 +62,7 @@ class TimerTrigger < Trigger
         reg = Regexp.new(args.slice(1, args.length).join).match(message.content)
         if reg
             room.timer.onevent(Time.now + args[0].to_i) do
-                response.call(reg, messag, room, bot)
+                response.call(reg, message, room, bot)
             end
         end
         return false
@@ -135,7 +135,9 @@ class EveryTrigger < Trigger
         if @counts >= args[0].to_i
             response.call(reg, message, room, bot)
             @counts = 0
+            return true
+        else
+            return false
         end
-        return false
     end
 end

@@ -24,6 +24,10 @@ class PhlangBot < Bot
         @variables = {}
     end
 
+    def paused?(room)
+        return @paused.include? room
+    end
+
     def load_code(blocks)
         blocks.each do |b|
             tr = nil
@@ -85,40 +89,48 @@ class PhlangBot < Bot
     def admin_commands()
         connection_event("send-event") do |message, room|
             name = room.nick
-            if /\A!kill @#{name}\Z/.match(message["content"])
-                room.send_message("/me is exiting.", message["id"])
-                remove_room(room)
-                if room_names.length == 0
-                    @group.remove(self)
+            if paused? room
+                if /\A!restore @#{name}\Z/.match(message["content"])
+                    room.send_message("/me is now restored.", message["id"])
+                    @paused.delete(room)
+                    next true
                 end
-                next true
-            elsif !@paused.include?(room) && /\A!pause @#{name}\Z/.match(message["content"])
-                room.send_message("/me is now paused.", message["id"])
-                @paused.push(room)
-                next true
-            elsif @paused.include?(room) && /\A!restore @#{name}\Z/.match(message["content"])
-                room.send_message("/me is now restored.", message["id"])
-                @paused.delete(room)
-                next true
-            elsif @paused.include?(room)
-                next true
+            else
+                if /\A!kill @#{name}\Z/.match(message["content"])
+                    room.send_message("/me is exiting.", message["id"])
+                    remove_room(room)
+                    if room_names.length == 0
+                        @group.remove(self)
+                    end
+                    next true
+                elsif !paused?(room) && /\A!pause @#{name}\Z/.match(message["content"])
+                    room.send_message("/me is now paused.", message["id"])
+                    @paused.push(room)
+                    next true
+                end
             end
+            next false
         end
     end
 
     def util_commands()
         connection_event("send-event") do |message, room|
             name = room.nick
-            if /\A!sendbot @#{name} &(\S+)\Z/.match(message["content"])
-                newroom = /^!sendbot @#{name} &(\S+)$/.match(message["content"])[1]
-                if add_room(Room.new(newroom))
-                    room.send_message("/me has been sent to &#{newroom}.", message["id"])
-                else
-                    room.send_message("/me could not find &#{newroom}.", message["id"])
+            if !paused? room
+                if /\A!sendbot @#{name} &(\S+)\Z/.match(message["content"])
+                    newroom = /^!sendbot @#{name} &(\S+)$/.match(message["content"])[1]
+                    if add_room(Room.new(newroom))
+                        room.send_message("/me has been sent to &#{newroom}.", message["id"])
+                    else
+                        room.send_message("/me could not find &#{newroom}.", message["id"])
+                    end
+                    next true
+                elsif /\A!code @#{name}\Z/.match(message["content"])
+                    room.send_message(@code, message["id"])
+                    next true
                 end
-            elsif /\A!code @#{name}\Z/.match(message["content"])
-                room.send_message(@code, message["id"])
             end
+            next false
         end
     end
 
@@ -126,19 +138,22 @@ class PhlangBot < Bot
         connection_event("send-event") do |message, room|
             name = room.nick
             content = message["content"]
-            if /\A!ping(?: @#{name})?\Z/.match(content)
-                room.send_message("Pong!", message["id"])
-                next true
-            elsif /\A!help @#{name}\Z/.match(content)
-                room.send_message(
-                    "@#{@basename} is a bot created by '#{@creator}' using a top secret project.\n\n" \
-                    "@#{@basename} responds to !ping, !help, !kill, !pause (and !restore)." \
-                , message["id"])
-                next true
-            elsif /\A!help\Z/.match(content)
-                room.send_message("#{@basename} is a bot created by '#{@creator}'.", message["id"])
-                next true
+            if !paused? room
+                if /\A!ping(?: @#{name})?\Z/.match(content)
+                    room.send_message("Pong!", message["id"])
+                    next true
+                elsif /\A!help @#{name}\Z/.match(content)
+                    room.send_message(
+                        "@#{@basename} is a bot created by '#{@creator}' using a top secret project.\n\n" \
+                        "@#{@basename} responds to !ping, !help, !kill, !pause (and !restore)." \
+                    , message["id"])
+                    next true
+                elsif /\A!help\Z/.match(content)
+                    room.send_message("#{@basename} is a bot created by '#{@creator}'.", message["id"])
+                    next true
+                end
             end
+            next false
         end
     end
 end

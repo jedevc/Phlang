@@ -23,16 +23,20 @@ class Response
     end
 
     def respond(trigdata, message, room, bot)
-        @extravars["time"] = message.time
-        @extravars["sender"] = message.sender
+        if bot.paused? room
+            return false
+        else
+            @extravars["time"] = message.time
+            @extravars["sender"] = message.sender
 
-        # HACK!
-        @funcs["%"] = lambda {|a| lookup(a, @extravars, bot.variables(room))}
-        @funcs["\\"] = lambda {|a| trigdata[a.to_i]}
+            # HACK!
+            @funcs["%"] = lambda {|a| lookup(a, @extravars, bot.variables(room))}
+            @funcs["\\"] = lambda {|a| trigdata[a.to_i]}
 
-        nargs = @args.calculate
-        nargs.map! {|e| e.to_s}
-        perform(nargs, message, room, bot)
+            nargs = @args.calculate
+            nargs.map! {|e| e.to_s}
+            return perform(nargs, message, room, bot)
+        end
     end
 
     def perform(args, message, room, bot)
@@ -57,7 +61,8 @@ class Trigger
         nargs = @args.calculate
         nargs.map! {|e| e.to_s}
 
-        return perform(response, nargs, message, room, bot)
+        val = perform(response, nargs, message, room, bot)
+        return val
     end
 
     def perform(response, args, message, room, bot)
