@@ -1,10 +1,13 @@
 def Tokens(raw)
     tokens = []
     last = ""
+
     quotes = false
+    comment = false
+
     raw.each_char do |c|
         if /\s/.match(c)
-            if quotes
+            if quotes or comment
                 last += c
             else
                 if last.length > 0
@@ -12,7 +15,13 @@ def Tokens(raw)
                     last = ""
                 end
             end
-        elsif c == '"'
+        elsif c == '#' and !quotes
+            if !comment and last.length > 0
+                tokens.push(last)
+            end
+            last = ""
+            comment = !comment
+        elsif c == '"' and !comment
             quotes = !quotes
             if last.length > 0
                 tokens.push(last)
@@ -23,7 +32,7 @@ def Tokens(raw)
         end
 
         op = /([^\w\s.])$/.match(last)
-        if op and !quotes
+        if op and !quotes and !comment
             first = last.slice(0, last.length - op[1].length)
             if first.length > 0
                 tokens.push(first)
