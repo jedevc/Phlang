@@ -45,7 +45,6 @@ class Room
     private
     # Ping handler
     def ping_reply(packet)
-        LogService.get.debug "@#{@nick}: ping reply"
         @connection.send_data(make_packet("ping-reply", {}))
     end
 
@@ -63,17 +62,14 @@ class Room
     def send_nick(n=@nick)
         @nick = n
         @connection.send_data(make_packet("nick", {"name" => n}))
-        LogService.get.debug "@#{@nick}: sending nick"
     end
 
     # Send a message in the room
     def send_message(content, parent=nil)
         if parent
             @connection.send_data(make_packet("send", {"content" => content, "parent" => parent}))
-            LogService.get.debug "@#{@nick}: sending reply"
         else
             @connection.send_data(make_packet("send", {"content" => content}))
-            LogService.get.debug "@#{@nick}: sending message"
         end
     end
 
@@ -82,6 +78,5 @@ class Room
         @connection.stop()
         @timer.stop()
         @broadcast.stop()
-        LogService.get.debug "@#{@nick}: disconnected"
     end
 end

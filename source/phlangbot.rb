@@ -35,7 +35,7 @@ class PhlangBot < Bot
             begin
                 tr = b.export(@config.allowed_triggers, @config.allowed_responses)
             rescue RuntimeError => e
-                LogService.get.warn "error parsing code: #{e.inspect}"
+                LogService.warn "error parsing code: #{e.inspect}"
             end
 
             if tr

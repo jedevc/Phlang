@@ -2,12 +2,15 @@ require 'logger'
 
 class LogService
     @@log = nil
+
     def self.provide(l)
         @@log = l
     end
-
-    def self.get()
-        @@log
+    
+    def self.method_missing(m, *args, &blk)
+        if @@log
+            @@log.method(m).call(*args, &blk)
+        end
     end
 end
 

@@ -102,6 +102,10 @@ class Connection < EMEventGenerator
             EM.defer do
                 packet = JSON.load(data)
                 if @status == :open
+                    if packet.has_key? "error"
+                        LogService.warn "packet error: #{packet["type"]}, #{packet["error"]}"
+                    end
+                    
                     if @callbacks.has_key? packet["type"]
                         @callbacks[packet["type"]].each do |c|
                             c.call(packet["data"])

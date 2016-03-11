@@ -21,7 +21,7 @@ def main(opts)
                 bs.add(b)
             end
         else
-            LogService.get.fatal "could not find any bots at #{places}"
+            LogService.fatal "could not find any bots at #{places}"
             return
         end
 
@@ -32,7 +32,7 @@ def main(opts)
 
         sleep
     rescue => e
-        LogService.get.fatal "unhandled exception: #{e.inspect} in\n#{e.backtrace[0]}"
+        LogService.fatal "unhandled exception: #{e.inspect} in\n#{e.backtrace[0]}"
     end
 end
 
