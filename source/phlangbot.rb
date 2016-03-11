@@ -7,6 +7,8 @@ require_relative 'parser'
 
 class PhlangBot < Bot
     attr_reader :config
+    
+    attr_accessor :variables
 
     def initialize(name, code, creator, config)
         super(name)
@@ -27,6 +29,26 @@ class PhlangBot < Bot
     def paused?(room)
         return @paused.include? room
     end
+    
+    def to_h()
+        return {
+            "nick" => @basename,
+            "rooms" => room_names,
+            "code" => @code,
+            "creator" => @creator,
+            "config" => @config.to_h,
+            "variables" => @variables
+        }
+    end
+
+    def self.from_h(h)
+        bot = PhlangBot.new(h["nick"], h["code"], h["creator"], PhlangBotConfig.from_h(h["config"]))
+        h["rooms"].each do |r|
+            bot.add_room(Room.new(r))
+        end
+        bot.variables = h["variables"]
+        return bot
+    end
 
     def load_code(blocks)
         blocks.each do |b|
@@ -45,29 +67,11 @@ class PhlangBot < Bot
         end
     end
 
-    def to_h()
-        return {
-            "nick" => @basename,
-            "rooms" => room_names,
-            "code" => @code,
-            "creator" => @creator,
-            "config" => @config.to_h
-        }
-    end
-
-    def self.from_h(h)
-        bot = PhlangBot.new(h["nick"], h["code"], h["creator"], PhlangBotConfig.from_h(h["config"]))
-        h["rooms"].each do |r|
-            bot.add_room(Room.new(r))
-        end
-        return bot
-    end
-
     def variables(room)
-        if !@variables.has_key?(room)
-            @variables[room] = {}
+        if !@variables.has_key?(room.name)
+            @variables[room.name] = {}
         end
-        return @variables[room]
+        return @variables[room.name]
     end
 
     def connection_event(name, &blk)
