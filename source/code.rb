@@ -28,6 +28,7 @@ class Response
         else
             @extravars["time"] = message.time
             @extravars["sender"] = message.sender
+            @extravars["senderid"] = message.senderid
 
             # HACK!
             @funcs["%"] = lambda {|a| lookup(a, @extravars, bot.variables(room))}
