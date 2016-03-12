@@ -22,11 +22,11 @@ def Tokens(raw)
             last = ""
             comment = !comment
         elsif c == '"' and !comment
-            quotes = !quotes
-            if last.length > 0
+            if last.length > 0 or quotes
                 tokens.push(last)
                 last = ""
             end
+            quotes = !quotes
         else
             last += c
         end
