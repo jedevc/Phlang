@@ -6,17 +6,21 @@ class PhlangBotConfig
     attr_reader :allowed_triggers
     attr_reader :allowed_responses
 
-    def initialize(builtins, trigs, resps)
+    attr_reader :spam_limit
+
+    def initialize(builtins, trigs, resps, spam_limit=nil)
         @builtins = builtins
         @allowed_triggers = trigs
         @allowed_responses = resps
+        @spam_limit = spam_limit
     end
 
     def to_h()
         return {
             "builtins" => @builtins.to_h,
             "allowed_triggers" => @allowed_triggers,
-            "allowed_responses" => @allowed_responses
+            "allowed_responses" => @allowed_responses,
+            "spam_limit" => @spam_limit
         }
     end
 
@@ -24,7 +28,8 @@ class PhlangBotConfig
         return PhlangBotConfig.new(
             BuiltinConfig.from_h(h["builtins"]),
             h["allowed_triggers"],
-            h["allowed_responses"]
+            h["allowed_responses"],
+            h["spam_limit"]
         )
     end
 end
@@ -60,3 +65,6 @@ FULL_TRIGGERS = MINIMAL_TRIGGERS
 
 MINIMAL_RESPONSES = ResponseFactory.responses.keys
 FULL_RESPONSES = MINIMAL_RESPONSES + ResponseFactory.advanced_responses.keys
+
+LOW_SECURITY = PhlangBotConfig.new(MINIMAL_BUILTINS, FULL_TRIGGERS, FULL_RESPONSES, nil)
+HIGH_SECURITY = PhlangBotConfig.new(FULL_BUILTINS, MINIMAL_TRIGGERS, MINIMAL_RESPONSES, 60)

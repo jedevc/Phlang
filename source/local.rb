@@ -22,7 +22,7 @@ end
 
 def load_bots(source, creator, conf=nil)
     if conf == nil
-        conf = PhlangBotConfig.new(MINIMAL_BUILTINS, FULL_TRIGGERS, FULL_RESPONSES)
+        conf = LOW_SECURITY
     end
 
     bots = []

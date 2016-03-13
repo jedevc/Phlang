@@ -5,6 +5,7 @@ require_relative 'logservice'
 class SendResponse < Response
     def perform(args, message, room, bot)
         args.each do |a|
+            break if bot.spam(room)
             room.send_message(a)
         end
         return false
@@ -14,6 +15,7 @@ end
 class ReplyResponse < Response
     def perform(args, message, room, bot)
         args.each do |a|
+            break if bot.spam(room)
             room.send_message(a, message.id)
         end
         return false
@@ -31,6 +33,7 @@ end
 
 class NickResponse < Response
     def perform(args, message, room, bot)
+        bot.spam(room)
         room.send_nick(args[-1])
         return false
     end
@@ -65,7 +68,7 @@ class CreateResponse < Response
             nick = args[0]
             code = args.slice(1, args.length).join(" ")
 
-            conf = PhlangBotConfig.new(FULL_BUILTINS, MINIMAL_TRIGGERS, MINIMAL_RESPONSES)
+            conf = HIGH_SECURITY
             nb = PhlangBot.new(nick, code, message.sender, conf)
             r = Room.new(room.name, room.password)
             nb.add_room(r)

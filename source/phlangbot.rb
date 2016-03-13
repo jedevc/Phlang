@@ -7,7 +7,7 @@ require_relative 'parser'
 
 class PhlangBot < Bot
     attr_reader :config
-    
+
     attr_accessor :variables
 
     def initialize(name, code, creator, config)
@@ -15,6 +15,8 @@ class PhlangBot < Bot
         @config = config
 
         @paused = []
+        @spam = {}
+
         @creator = creator
         @code = code
 
@@ -26,10 +28,6 @@ class PhlangBot < Bot
         @variables = {}
     end
 
-    def paused?(room)
-        return @paused.include? room
-    end
-    
     def to_h()
         return {
             "nick" => @basename,
@@ -74,6 +72,40 @@ class PhlangBot < Bot
         return @variables[room.name]
     end
 
+    def pause(room, pos=true)
+        if pos
+            @paused.push(room)
+        else
+            @paused.delete(room)
+            @spam.delete(room)
+        end
+    end
+
+    def paused?(room)
+        return @paused.include? room
+    end
+
+    def spam(room, amount=1)
+        if !@config.spam_limit.nil?
+            if !@spam.has_key? room
+                @spam[room] = amount
+                room.timer.onevent(Time.now + 60) do
+                    @spam.delete(room)
+                end
+            else
+                @spam[room] += amount
+            end
+
+            if @spam[room] >= @config.spam_limit
+                room.send_message("/me has been paused (possible spam attack).")
+                pause(room)
+                return true
+            else
+                return false
+            end
+        end
+    end
+
     def connection_event(name, &blk)
         new_room do |room|
             room.connection.onevent(name) do |message|
@@ -93,27 +125,28 @@ class PhlangBot < Bot
     def admin_commands()
         connection_event("send-event") do |message, room|
             name = room.nick
-            if paused? room
-                if /\A!restore @#{name}\Z/.match(message["content"])
-                    room.send_message("/me is now restored.", message["id"])
-                    @paused.delete(room)
-                    next true
+            if /\A!restore @#{name}\Z/.match(message["content"]) and paused? room
+                pause(room, false)
+                room.send_message("/me is now restored.", message["id"])
+                next true
+            elsif /\A!pause @#{name}\Z/.match(message["content"]) and !paused? room
+                room.send_message("/me is now paused.", message["id"])
+                pause(room)
+                next true
+            elsif /\A!kill @#{name}\Z/.match(message["content"])
+                room.send_message("/me is exiting.", message["id"])
+                remove_room(room)
+
+                pause(room, false)
+                @variables.delete(room)
+
+                if room_names.length == 0
+                    @group.remove(self)
                 end
+                next true
             else
-                if /\A!kill @#{name}\Z/.match(message["content"])
-                    room.send_message("/me is exiting.", message["id"])
-                    remove_room(room)
-                    if room_names.length == 0
-                        @group.remove(self)
-                    end
-                    next true
-                elsif !paused?(room) && /\A!pause @#{name}\Z/.match(message["content"])
-                    room.send_message("/me is now paused.", message["id"])
-                    @paused.push(room)
-                    next true
-                end
+                next false
             end
-            next false
         end
     end
 
