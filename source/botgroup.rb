@@ -2,7 +2,7 @@ require 'json'
 
 require_relative 'phlangbot'
 
-class PhlangBotGroup
+class BotGroup
     def initialize()
         @bots = []
     end

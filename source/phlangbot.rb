@@ -28,6 +28,7 @@ class PhlangBot < Bot
         @variables = {}
     end
 
+    public
     def to_h()
         return {
             "nick" => @basename,
@@ -48,23 +49,7 @@ class PhlangBot < Bot
         return bot
     end
 
-    def load_code(blocks)
-        blocks.each do |b|
-            tr = nil
-
-            begin
-                tr = b.export(@config.allowed_triggers, @config.allowed_responses)
-            rescue RuntimeError => e
-                LogService.warn "error parsing code: #{e.inspect}"
-            end
-
-            if tr
-                trigger, response = tr
-                trigger.add(self, response)
-            end
-        end
-    end
-
+    # Get the variables for a specific room
     def variables(room)
         if !@variables.has_key?(room.name)
             @variables[room.name] = {}
@@ -72,6 +57,7 @@ class PhlangBot < Bot
         return @variables[room.name]
     end
 
+    # Pause a room
     def pause(room, pos=true)
         if pos
             @paused.push(room)
@@ -81,10 +67,12 @@ class PhlangBot < Bot
         end
     end
 
+    # See if a room is paused
     def paused?(room)
         return @paused.include? room
     end
 
+    # Increment the spam counter
     def spam(room, amount=1)
         if !@config.spam_limit.nil?
             if !@spam.has_key? room
@@ -106,22 +94,26 @@ class PhlangBot < Bot
         end
     end
 
-    def connection_event(name, &blk)
-        new_room do |room|
-            room.connection.onevent(name) do |message|
-                blk.call(message, room)
+    private
+    # Load code from blocks of code
+    def load_code(blocks)
+        blocks.each do |b|
+            tr = nil
+
+            begin
+                tr = b.export(@config.allowed_triggers, @config.allowed_responses)
+            rescue RuntimeError => e
+                LogService.warn "error parsing code: #{e.inspect}"
+            end
+
+            if tr
+                trigger, response = tr
+                trigger.add(self, response)
             end
         end
     end
 
-    def broadcast_event(&blk)
-        new_room do |room|
-            room.broadcast.onevent do |message|
-                blk.call(message, room)
-            end
-        end
-    end
-
+    # Administration commands
     def admin_commands()
         connection_event("send-event") do |message, room|
             name = room.nick
@@ -150,6 +142,7 @@ class PhlangBot < Bot
         end
     end
 
+    # Various utility commands
     def util_commands()
         connection_event("send-event") do |message, room|
             name = room.nick
@@ -171,6 +164,7 @@ class PhlangBot < Bot
         end
     end
 
+    # Information commands
     def info_commands()
         connection_event("send-event") do |message, room|
             name = room.nick

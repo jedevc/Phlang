@@ -14,6 +14,23 @@ class Bot
     end
 
     public
+    # Convert to a hash
+    def to_h()
+        return {
+            "nick" => @basename,
+            "rooms" => room_names,
+        }
+    end
+
+    # Convert from a hash
+    def self.from_h(h)
+        bot = Bot.new(h["nick"])
+        h["rooms"].each do |r|
+            bot.add_room(Room.new(r))
+        end
+        return bot
+    end
+
     # Add a room to the collection for monitoring
     def add_room(room)
         if not room.exists
@@ -56,5 +73,23 @@ class Bot
         end
 
         @onnew.push(blk)
+    end
+
+    # Create an event for the connection
+    def connection_event(name, &blk)
+        new_room do |room|
+            room.connection.onevent(name) do |message|
+                blk.call(message, room)
+            end
+        end
+    end
+
+    # Create an event for broadcasts
+    def broadcast_event(&blk)
+        new_room do |room|
+            room.broadcast.onevent do |message|
+                blk.call(message, room)
+            end
+        end
     end
 end
