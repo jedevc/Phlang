@@ -9,13 +9,21 @@ def lookup(var, *where)
     return nil
 end
 
+def symbol(name)
+    case name
+    when 'n'
+        "\n"
+    end
+end
+
 class Response
     def initialize(args)
         @extravars = {}
         @funcs = {
             "?" => lambda {|*args| args.sample},
             "%" => lambda {|a| lookup(a, @extravars)},
-            "\\" => lambda {|a| nil}
+            "\\" => lambda {|a| nil},
+            "$" => lambda {|a| symbol(a)}
         }
         context = ShuntContext.new(@funcs)
 
