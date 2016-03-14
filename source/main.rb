@@ -32,7 +32,7 @@ def main(opts)
 
         sleep
     rescue => e
-        LogService.fatal "unhandled exception: #{e.inspect} in\n#{e.backtrace[0]}"
+        LogService.fatal "unhandled exception: #{e.inspect} in\n#{e.backtrace.join("\n")}"
     end
 end
 
