@@ -75,10 +75,13 @@ class BotGroup
         @bots.clear()
     end
 
-    # Iteration helper
     def each()
         @bots.each do |b|
             yield b
         end
+    end
+
+    def length()
+        return @bots.length
     end
 end

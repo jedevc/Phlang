@@ -30,7 +30,8 @@ def main(opts)
             b.add_room(r)
         end
 
-        sleep
+        sleep 1 while bs.length > 0
+        EMEventGenerator.halt()
     rescue => e
         LogService.fatal "unhandled exception: #{e.inspect} in\n#{e.backtrace.join("\n")}"
     end

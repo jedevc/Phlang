@@ -91,4 +91,12 @@ class EMEventGenerator < EventGenerator
 
         super()
     end
+
+    def self.halt()
+        if Thread.current == Thread.main
+            EM.stop_event_loop()
+            @@thread.join
+            @@thread = nil
+        end
+    end
 end
