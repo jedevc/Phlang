@@ -1,8 +1,10 @@
+QUOTE_TYPES = ["'", '"']
+
 def Tokens(raw)
     tokens = []
     last = ""
 
-    quotes = false
+    quotes = nil
     comment = false
 
     raw.each_char do |c|
@@ -21,12 +23,16 @@ def Tokens(raw)
             end
             last = ""
             comment = !comment
-        elsif c == '"' and !comment
-            if last.length > 0 or quotes
-                tokens.push(last)
-                last = ""
+        elsif QUOTE_TYPES.include? c and (not quotes or quotes == c) and !comment
+            if quotes
+                if last.length > 0 or quotes
+                    tokens.push(last)
+                    last = ""
+                end
+                quotes = nil
+            elsif !quotes
+                quotes = c
             end
-            quotes = !quotes
         else
             last += c
         end
