@@ -70,8 +70,7 @@ class Trigger
         nargs = @args.calculate
         nargs.map! {|e| e.to_s}
 
-        val = perform(response, nargs, message, room, bot)
-        return val
+        perform(response, nargs, message, room, bot)
     end
 
     def perform(response, args, message, room, bot)

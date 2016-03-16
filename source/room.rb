@@ -20,7 +20,7 @@ class Room
 
         @connection = nil
         if room_exists?(room)
-            @connection = EventQueue.new(Connection.new(room))
+            @connection = Connection.new(room)
             @connection.onevent("ping-event") do |packet| ping_reply(packet) end
             @connection.onevent("hello-event") do |packet| ready(packet) end
             @connection.start()

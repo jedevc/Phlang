@@ -5,20 +5,19 @@ require_relative 'message'
 class StartTrigger < Trigger
     def add(bot, response)
         bot.connection_event("snapshot-event") do |m, r|
-            next trigger(response, Message.new(), r, bot)
+            trigger(response, Message.new(), r, bot)
         end
     end
 
     def perform(response, args, message, room, bot)
         response.call(nil, message, room, bot)
-        return true
     end
 end
 
 class MessageTrigger < Trigger
     def add(bot, response)
         bot.connection_event("send-event") do |m, r|
-            next trigger(response, Message.new(m), r, bot)
+            trigger(response, Message.new(m), r, bot)
         end
     end
 
@@ -26,9 +25,6 @@ class MessageTrigger < Trigger
         reg = Regexp.new(args.join).match(message.content)
         if reg
             response.call(reg, message, room, bot)
-            return true
-        else
-            return false
         end
     end
 end
@@ -36,7 +32,7 @@ end
 class BroadcastTrigger < Trigger
     def add(bot, response)
         bot.broadcast_event do |m, r|
-            next trigger(response, Message.new(m, "bot", Time.now.to_i), r, bot)
+            trigger(response, Message.new(m, "bot", Time.now.to_i), r, bot)
         end
     end
 
@@ -44,9 +40,6 @@ class BroadcastTrigger < Trigger
         reg = Regexp.new(args.join).match(message.content)
         if reg
             response.call(reg, message, room, bot)
-            return true
-        else
-            return false
         end
     end
 end
@@ -54,7 +47,7 @@ end
 class TimerTrigger < Trigger
     def add(bot, response)
         bot.connection_event("send-event") do |m, r|
-            next trigger(response, Message.new(m), r, bot)
+            trigger(response, Message.new(m), r, bot)
         end
     end
 
@@ -65,7 +58,6 @@ class TimerTrigger < Trigger
                 response.call(reg, message, room, bot)
             end
         end
-        return false
     end
 end
 
@@ -79,7 +71,7 @@ class PushTimerTrigger < Trigger
     public
     def add(bot, response)
         bot.connection_event("send-event") do |m, r|
-            next trigger(response, Message.new(m), r, bot)
+            trigger(response, Message.new(m), r, bot)
         end
     end
 
@@ -96,7 +88,6 @@ class PushTimerTrigger < Trigger
                 @last[room] = message
             end
         end
-        return false
     end
 
     private
@@ -122,7 +113,7 @@ class EveryTrigger < Trigger
 
     def add(bot, response)
         bot.connection_event("send-event") do |m, r|
-            next trigger(response, Message.new(m), r, bot)
+            trigger(response, Message.new(m), r, bot)
         end
     end
 
@@ -135,9 +126,6 @@ class EveryTrigger < Trigger
         if @counts >= args[0].to_i
             response.call(reg, message, room, bot)
             @counts = 0
-            return true
-        else
-            return false
         end
     end
 end

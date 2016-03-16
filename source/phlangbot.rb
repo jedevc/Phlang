@@ -16,6 +16,7 @@ class PhlangBot < Bot
 
         @paused = []
         @spam = {}
+        @has_responded = {}
 
         @creator = creator
         @code = code
@@ -24,6 +25,7 @@ class PhlangBot < Bot
         util_commands() if @config.builtins.util
         load_code(Parser.new(code, @config.allowed_triggers, @config.allowed_responses).parse())
         info_commands() if @config.builtins.info
+        connection_event("send-event") {|m, r| @has_responded[r] = false} # Reset responses
 
         @variables = {}
     end
@@ -74,6 +76,7 @@ class PhlangBot < Bot
 
     # Increment the spam counter
     def spam(room, amount=1)
+        @has_responded[room] = true
         if !@config.spam_limit.nil?
             if !@spam.has_key? room
                 @spam[room] = amount
@@ -120,11 +123,9 @@ class PhlangBot < Bot
             if /\A!restore @#{name}\Z/.match(message["content"]) and paused? room
                 pause(room, false)
                 room.send_message("/me is now restored.", message["id"])
-                next true
             elsif /\A!pause @#{name}\Z/.match(message["content"]) and !paused? room
                 room.send_message("/me is now paused.", message["id"])
                 pause(room)
-                next true
             elsif /\A!kill @#{name}\Z/.match(message["content"])
                 room.send_message("/me is exiting.", message["id"])
                 remove_room(room)
@@ -135,9 +136,6 @@ class PhlangBot < Bot
                 if room_names.length == 0
                     @group.remove(self)
                 end
-                next true
-            else
-                next false
             end
         end
     end
@@ -154,13 +152,10 @@ class PhlangBot < Bot
                     else
                         room.send_message("/me could not find &#{newroom}.", message["id"])
                     end
-                    next true
                 elsif /\A!code @#{name}\Z/.match(message["content"])
                     room.send_message(@code, message["id"])
-                    next true
                 end
             end
-            next false
         end
     end
 
@@ -169,25 +164,20 @@ class PhlangBot < Bot
         connection_event("send-event") do |message, room|
             name = room.nick
             content = message["content"]
-            if !paused? room
+            if !paused? room and !@has_responded[room]
                 if /\A!ping(?: @#{name})?\Z/.match(content)
                     room.send_message("Pong!", message["id"])
-                    next true
                 elsif /\A!help @#{name}\Z/.match(content)
                     room.send_message(
                         "@#{@basename} is a bot created by '#{@creator}' using a top secret project.\n\n" \
                         "@#{@basename} responds to !ping, !help, !kill, !pause (and !restore)." \
                     , message["id"])
-                    next true
                 elsif /\A!help\Z/.match(content)
                     room.send_message("#{@basename} is a bot created by '#{@creator}'.", message["id"])
-                    next true
                 elsif /\A!creator @#{name}\Z/.match(message["content"])
                     room.send_message(@creator, message["id"])
-                    next true
                 end
             end
-            next false
         end
     end
 end
