@@ -5,9 +5,15 @@ require_relative 'phlangbot'
 class BotGroup
     def initialize()
         @bots = []
+
+        @cempty = true
     end
 
     public
+    def empty?
+        return (@bots.length == 0 and @cempty)
+    end
+
     # Add a bot to the group
     def add(bot)
         bot.group = self
@@ -53,10 +59,12 @@ class BotGroup
         data = JSON.load(raw)
 
         # Add the data to the group
+        @cempty = false
         clear()
         data.each do |d|
             add(PhlangBot.from_h(d))
         end
+        @cempty = true
     end
 
     # Remove a bot from the group
@@ -79,9 +87,5 @@ class BotGroup
         @bots.each do |b|
             yield b
         end
-    end
-
-    def length()
-        return @bots.length
     end
 end
