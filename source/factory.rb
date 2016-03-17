@@ -3,12 +3,12 @@ require_relative 'responses'
 
 class TriggerFactory
     @@triggers = {
-        "start" => lambda do |args| return StartTrigger.new(args) end,
-        "msg" => lambda do |args| return MessageTrigger.new(args) end,
-        "receive" => lambda do |args| return BroadcastTrigger.new(args) end,
-        "timer" => lambda do |args| return TimerTrigger.new(args) end,
-        "ptimer" => lambda do |args| return PushTimerTrigger.new(args) end,
-        "every" => lambda do |args| return EveryTrigger.new(args) end
+        "start" => StartTrigger.method(:new),
+        "msg" => MessageTrigger.method(:new),
+        "receive" => BroadcastTrigger.method(:new),
+        "timer" => TimerTrigger.method(:new),
+        "ptimer" => PushTimerTrigger.method(:new),
+        "every" => EveryTrigger.method(:new)
     }
 
     def self.build(t, args)
@@ -22,20 +22,20 @@ end
 
 class ResponseFactory
     @@responses = {
-        "send" => lambda do |args| return SendResponse.new(args) end,
-        "reply" => lambda do |args| return ReplyResponse.new(args) end,
-        "broadcast" => lambda do |args| return BroadcastResponse.new(args) end,
-        "nick" => lambda do |args| return NickResponse.new(args) end,
-        "set" => lambda do |args| return SetResponse.new(args) end,
-        "breakif" => lambda do |args| return BreakResponse.new(args) end
+        "send" => SendResponse.method(:new),
+        "reply" => ReplyResponse.method(:new),
+        "broadcast" => BroadcastResponse.method(:new),
+        "nick" => NickResponse.method(:new),
+        "set" => SetResponse.method(:new),
+        "breakif" => BreakResponse.method(:new)
     }
 
     @@advanced_responses = {
-        "create" => lambda do |args| return CreateResponse.new(args) end,
-        "log" => lambda do |args| return LogResponse.new(args) end,
-        "list" => lambda do |args| return ListResponse.new(args) end,
-        "save" => lambda do |args| return SaveResponse.new(args) end,
-        "recover" => lambda do |args| return RecoverResponse.new(args) end
+        "create" => CreateResponse.method(:new),
+        "log" => LogResponse.method(:new),
+        "list" => ListResponse.method(:new),
+        "save" => SaveResponse.method(:new),
+        "recover" => RecoverResponse.method(:new)
     }
 
     def self.build(t, args)
