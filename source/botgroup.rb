@@ -1,12 +1,14 @@
 require 'json'
+require 'yaml/store'
 
 require_relative 'phlangbot'
 
 class BotGroup
     def initialize()
         @bots = []
-
         @cempty = true
+
+        @store = nil
     end
 
     public
@@ -22,14 +24,11 @@ class BotGroup
 
     # Create a snapshot
     def save(name)
-        # Prepare the data
-        data = @bots.map {|b| b.to_h}
-        raw = JSON.pretty_generate(data)
-
-        # Write the snapshot
         filename = File.join("snapshots", name)
-        File.open(filename, 'w') do |file|
-            file.write(raw)
+        @store = YAML::Store.new(filename)
+
+        @store.transaction do
+            @store["bots"] = @bots.map {|b| b.to_h}
         end
 
         # Symlink 'latest' to the new file
@@ -51,18 +50,15 @@ class BotGroup
             return
         end
 
-        # Get the raw data
-        raw = ""
-        File.open(filename, 'r') do |file|
-            raw = file.read()
-        end
-        data = JSON.load(raw)
+        # Load the store
+        @store = YAML::Store.new(filename)
 
-        # Add the data to the group
         @cempty = false
-        clear()
-        data.each do |d|
-            add(PhlangBot.from_h(d))
+        @store.transaction do
+            clear()
+            @store["bots"].each do |d|
+                add(PhlangBot.from_h(d))
+            end
         end
         @cempty = true
     end
