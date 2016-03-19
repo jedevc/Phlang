@@ -8,8 +8,6 @@ require_relative 'parser'
 class PhlangBot < Bot
     attr_reader :config
 
-    attr_accessor :variables
-
     def initialize(name, code, creator, config)
         super(name)
         @config = config
@@ -37,8 +35,7 @@ class PhlangBot < Bot
             "rooms" => room_names,
             "code" => @code,
             "creator" => @creator,
-            "config" => @config.to_h,
-            "variables" => @variables
+            "config" => @config.to_h
         }
     end
 
@@ -47,7 +44,6 @@ class PhlangBot < Bot
         h["rooms"].each do |r|
             bot.add_room(Room.new(r))
         end
-        bot.variables = h["variables"]
         return bot
     end
 
