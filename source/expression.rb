@@ -16,9 +16,14 @@ class RPN
                 f = get_func(t)
 
                 vals = stack.pop(f.parameters.length)
-
-                ret = f.call(*vals)
-                stack.push(ret)
+                if vals.length == f.parameters.length
+                    ret = f.call(*vals)
+                    stack.push(ret)
+                else
+                    vals.each do |v|
+                        stack.push(v)
+                    end
+                end
             elsif has_func?(t.split(COUNT_SEPERATOR)[0])
                 name, args = t.split(COUNT_SEPERATOR)
                 args = args.to_i
