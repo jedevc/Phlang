@@ -129,11 +129,11 @@ class PhlangBot < Bot
                 pause(room, false)
                 @variables.delete(room)
 
+                @group.force(self)
+
                 if room_names.length == 0
                     @group.remove(self)
                 end
-
-                @group.force(self)
             end
         end
     end
