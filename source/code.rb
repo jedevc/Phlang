@@ -55,7 +55,7 @@ end
 class Trigger
     def initialize(args)
         @funcs = {
-            "%" => lambda {|a| lookup(a, bot.variables(room))}
+            "%" => lambda {|a| nil}
         }
 
         context = ShuntContext.new(@funcs)
@@ -67,6 +67,8 @@ class Trigger
     end
 
     def trigger(response, message, room, bot)
+        @funcs["%"] = lambda {|a| lookup(a, bot.variables(room))}
+
         nargs = @args.calculate
         nargs.map! {|e| e.to_s}
 
