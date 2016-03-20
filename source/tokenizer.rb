@@ -33,6 +33,8 @@ def Tokens(raw)
             elsif !quotes
                 quotes = c
             end
+        elsif last[-1] == '\\' and c == 'n'
+            last = last.slice(0, last.length-1) + "\n"
         else
             last += c
         end

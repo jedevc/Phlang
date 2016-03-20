@@ -9,21 +9,13 @@ def lookup(var, *where)
     return nil
 end
 
-def symbol(name)
-    case name
-    when 'n'
-        "\n"
-    end
-end
-
 class Response
     def initialize(args)
         @extravars = {}
         @funcs = {
             "?" => lambda {|*args| args.sample},
             "%" => lambda {|a| lookup(a, @extravars)},
-            "\\" => lambda {|a| nil},
-            "$" => lambda {|a| symbol(a)}
+            "$" => lambda {|a| nil}
         }
         context = ShuntContext.new(@funcs)
 
@@ -40,7 +32,7 @@ class Response
 
             # HACK!
             @funcs["%"] = lambda {|a| lookup(a, @extravars, bot.variables(room))}
-            @funcs["\\"] = lambda {|a| trigdata[a.to_i]}
+            @funcs["$"] = lambda {|a| trigdata[a.to_i]}
 
             nargs = @args.calculate
             nargs.map! {|e| e.to_s}
