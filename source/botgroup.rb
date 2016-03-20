@@ -20,6 +20,28 @@ class BotGroup
     def add(bot)
         bot.group = self
         @bots.push(bot)
+        if @store
+            @store.transaction do
+                @store[bot.basename] = bot.to_h
+            end
+        end
+    end
+
+    def force(bot=nil)
+        if @store
+            @store.transaction do
+                if bot
+                    @store[bot.basename] = bot.to_h
+                else
+                    names = @bots.map {|b| b.basename}
+                    bhs = @bots.map {|b| b.to_h}
+
+                    Hash[names.zip(bhs)].each do |k, v|
+                        @store[k] = v
+                    end
+                end
+            end
+        end
     end
 
     # Create a snapshot
@@ -27,9 +49,7 @@ class BotGroup
         filename = File.join("snapshots", name)
         @store = YAML::Store.new(filename)
 
-        @store.transaction do
-            @store["bots"] = @bots.map {|b| b.to_h}
-        end
+        force()
 
         # Symlink 'latest' to the new file
         latest = File.join("snapshots", "latest")
@@ -53,12 +73,17 @@ class BotGroup
         # Load the store
         @store = YAML::Store.new(filename)
 
-        @cempty = false
+        bs = []
         @store.transaction do
-            clear()
-            @store["bots"].each do |d|
-                add(PhlangBot.from_h(d))
+            @store.roots.each do |k|
+                bs.push(PhlangBot.from_h(@store[k]))
             end
+        end
+
+        @cempty = false
+        clear()
+        bs.each do |v|
+            add(v)
         end
         @cempty = true
     end
@@ -68,6 +93,12 @@ class BotGroup
         bot.group = nil
         bot.remove_all_rooms()
         @bots.delete(bot)
+
+        if @store
+            @store.transaction do
+                @store.delete(bot.basename)
+            end
+        end
     end
 
     # Remove all bots from the group
@@ -77,6 +108,14 @@ class BotGroup
             bot.remove_all_rooms()
         end
         @bots.clear()
+
+        if @store
+            @store.transaction do
+                @store.roots.each do |r|
+                    @store.delete(r)
+                end
+            end
+        end
     end
 
     def each()

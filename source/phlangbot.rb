@@ -132,6 +132,8 @@ class PhlangBot < Bot
                 if room_names.length == 0
                     @group.remove(self)
                 end
+
+                @group.force(self)
             end
         end
     end
@@ -148,6 +150,7 @@ class PhlangBot < Bot
                     else
                         room.send_message("/me could not find &#{newroom}.", message["id"])
                     end
+                    @group.force(self)
                 elsif /\A!code @#{name}\Z/.match(message["content"])
                     room.send_message(@code, message["id"])
                 end
