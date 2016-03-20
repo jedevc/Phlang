@@ -16,18 +16,29 @@ class Room
     attr_accessor :broadcast
 
     def initialize(room, password=nil)
+        @name = room
+        @password = password
+
         @nick = ""
 
         @connection = nil
         if room_exists?(room)
             @connection = Connection.new(room)
-            @connection.onevent("ping-event") do |packet| ping_reply(packet) end
-            @connection.onevent("hello-event") do |packet| ready(packet) end
+
+            @connection.onevent("ping-event") do |packet|
+                ping_reply(packet)
+            end
+            @connection.onevent("snapshot-event") do |packet|
+                ready(packet)
+            end
+            @connection.onevent("bounce-event") do |packet|
+                if @password
+                    @connection.send_data(make_packet("auth", {"type" => "passcode", "passcode" => @password}))
+                end
+            end
+
             @connection.start()
         end
-
-        @name = room
-        @password = password
 
         @connected = false
 
@@ -51,9 +62,7 @@ class Room
     # Prepare things for rooms
     def ready(packet)
         @connected = true
-        if packet["room_is_private"] and @password
-            @connection.send_data(make_packet("auth", {"type" => "passcode", "passcode" => @password}))
-        end
+
         send_nick()
     end
 
