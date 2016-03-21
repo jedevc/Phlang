@@ -1,5 +1,8 @@
-*.gem
-*.bundle
+.bundle/
+vendor/
 
 bots/
+!bots/metabot
+
 snapshots/
+!snapshots/snapshots_go_here.txt
