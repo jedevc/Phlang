@@ -30,6 +30,7 @@ class Response
             @extravars["ftime"] = Time.at(message.time).utc.strftime("%Y-%m-%d %H:%M:%S")
             @extravars["sender"] = message.sender
             @extravars["senderid"] = message.senderid
+            @extravars["room"] = room.name
 
             # HACK!
             @funcs["%"] = lambda {|a| lookup(a, @extravars, bot.variables(room))}
