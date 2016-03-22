@@ -17,5 +17,7 @@ class Message
         else
             @content, @sender, @id, @time = args
         end
+
+        @time = 0 if @time.nil?
     end
 end

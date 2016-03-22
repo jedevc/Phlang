@@ -32,7 +32,7 @@ end
 class BroadcastTrigger < Trigger
     def add(bot, response)
         bot.broadcast_event do |m, r|
-            trigger(response, Message.new(m, "bot", Time.now.to_i), r, bot)
+            trigger(response, Message.new(m, "bot", nil, Time.now.to_i), r, bot)
         end
     end
 
