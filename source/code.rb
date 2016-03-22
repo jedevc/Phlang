@@ -27,6 +27,7 @@ class Response
             return false
         else
             @extravars["time"] = message.time
+            @extravars["ftime"] = Time.at(message.time).utc.strftime("%Y-%m-%d %H:%M:%S")
             @extravars["sender"] = message.sender
             @extravars["senderid"] = message.senderid
 
