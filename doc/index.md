@@ -30,17 +30,19 @@ reply "/me tests along."
 ```
 
 Expressions are used in the args for triggers and responses for greater
-flexibility. You can use basic mathematical operators (+, -, \*, and /),
-underscores for string concentration and parenthesis to control the order of
-operations. You can also use the % function to access the value of a variable.
+flexibility. You can use basic mathematical operators (```+```, ```-```,
+```*```, and ```/```), underscores (```_```) for string concentration and
+parenthesis to control the order of operations. You can also use the ```%```
+function to access the value of a variable.
 
 ```
 msg "!dosum"
 reply 1 + 4 / 2 # == 3 #
 ```
 
-Use single or double quotes to wrap string literals (sometimes not actually
-required but always worth doing to prevent difficult to track down bugs).
+Use single or double quotes (```'```/```"```)to wrap string literals (sometimes
+not actually required but always worth doing to prevent difficult to track down
+bugs).
 
 ### Triggers
 
@@ -165,7 +167,8 @@ enforced.
 
 ### Using locally
 
-To host your bot locally, just run the following commands in bash.
+To host your bot locally, first make sure that Ruby and bundle are installed,
+then simply run the following commands in bash.
 
 ```bash
 # Clone the repo
