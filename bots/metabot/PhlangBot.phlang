@@ -23,7 +23,7 @@ msg "\A!help\Z"
 reply "Create bots using phlang."
 
 msg "\A!help @PhlangBot\Z"
-reply "This is the bot help for @PhlangBot.
-
-:warning: Help coming soon...
+reply "
+The Phlang source code is hosted at github.com/jedevc/Phlang.
+Documentation can be viewed at github.com/jedevc/Phlang/blob/docs/doc/index.md.
 "
