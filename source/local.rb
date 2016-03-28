@@ -27,7 +27,7 @@ def load_bots(source, creator, conf=nil)
 
     bots = []
     source.each_key do |k|
-        b = PhlangBot.new(k, source[k], creator, conf)
+        b = PhlangBot.new(k, source[k], conf, creator)
         bots.push(b)
     end
     return bots

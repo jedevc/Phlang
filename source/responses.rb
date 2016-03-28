@@ -69,7 +69,7 @@ class CreateResponse < Response
             code = args.slice(1, args.length).join(" ")
 
             conf = HIGH_SECURITY
-            nb = PhlangBot.new(nick, code, message.sender, conf)
+            nb = PhlangBot.new(nick, code, conf, message.sender)
             r = Room.new(room.name, room.password)
             nb.add_room(r)
             bot.group.add(nb)

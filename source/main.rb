@@ -44,7 +44,7 @@ if __FILE__ == $0
         :room => "costofcivilization",
         :password => nil,
         :logging => STDOUT,
-        :creator => "local",
+        :creator => "",
         :config => nil
     }
 
