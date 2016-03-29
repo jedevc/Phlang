@@ -6,6 +6,7 @@ class Block
         @responses = []
     end
 
+    public
     def add_trigger(trigger, targs)
         @trigger = [trigger, targs]
     end

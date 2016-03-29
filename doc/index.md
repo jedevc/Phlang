@@ -18,6 +18,7 @@ The Phlang language is fairly simple.
 trigger args
 response args
 response args
+end
 ```
 
 A trigger is an object that listens for events. Then various responses
@@ -27,6 +28,7 @@ responses as you like to a single trigger.
 ```
 msg "!test"
 reply "/me tests along."
+end
 ```
 
 Expressions are used in the args for triggers and responses for greater
@@ -38,6 +40,7 @@ function to access the value of a variable.
 ```
 msg "!dosum"
 reply 1 + 4 / 2 # == 3 #
+end
 ```
 
 Use single or double quotes (```'```/```"```)to wrap string literals (sometimes
@@ -94,6 +97,7 @@ expressions for responses.
 # Randomly select one of the two args #
 msg "!rand ([\s\S]*) ([\s\S]*)"
 reply ?($(1), $(2))
+end
 ```
 
 | Variable       | Description                                                  |
@@ -107,6 +111,7 @@ reply ?($(1), $(2))
 ```
 msg "!whoami"
 reply "You are @" _ %(sender) _ " with an id of " _ %(senderid)
+end
 ```
 
 ### Examples
@@ -114,8 +119,9 @@ reply "You are @" _ %(sender) _ " with an id of " _ %(senderid)
 A bot that repeats everything after an '!echo' command:
 ```
 # EchoBot #
-msg "^!echo ([\s\S]*)$"
+msg "^!echo ([\s\S]\*)$"
 reply "You said: " _ $(1)
+end
 ```
 
 A bot that performs basic addition:
@@ -123,6 +129,7 @@ A bot that performs basic addition:
 # AddBot #
 msg "^!add (\d+) (\d+)$"
 reply $(1) _ " + " _ $(2) _ " = " _ ($(1) + $(2))
+end
 ```
 
 A bot that rolls by after 10 minutes of inactivity:
@@ -130,6 +137,7 @@ A bot that rolls by after 10 minutes of inactivity:
 # DemoWeed #
 ptimer 600 "^([\s\S]*)$"
 send "/me rolls by."
+end
 ```
 
 You can observe more examples of bots in ```bots/```.

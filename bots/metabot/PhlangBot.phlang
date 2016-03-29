@@ -2,28 +2,39 @@ msg "\A!phlang create @(\S*) ([\s\S]*)\Z"
 create $(1) $(2)
 reply "Created @" _ $(1)
 log "Created @" _ $(1)
+end
 
 msg "\A!phlang list\Z"
 list
+end
 
 msg "\A!phlang save\Z"
 log "Creating snapshot with name " _ %(time)
 reply "Creating snapshot with name " _ %(time)
 save %(time)
+end
 
 msg "\A!phlang recover ([\s\S]*)\Z"
 log "Recovering snapshot from " _ $(1)
 recover $(1)
+end
 
 msg "\A!phlang recover\Z"
 log "Recovering latest snapshot."
 recover
+end
 
 msg "\A!help\Z"
 reply "Create bots using phlang."
+end
 
 msg "\A!help @PhlangBot\Z"
 reply "
 The Phlang source code is hosted at github.com/jedevc/Phlang.
 Documentation can be viewed at github.com/jedevc/Phlang/blob/master/doc/index.md.
 "
+end
+
+msg "\A!help\Z"
+reply "Create bots using the phlang bot language."
+end

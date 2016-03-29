@@ -13,49 +13,34 @@ class Parser
 
     def parse()
         blocks = []
-        block = Block.new()
 
-        trigger = []
+        trigger = nil
         response = []
 
         @bits.each do |bit|
-            if @allowed_triggers.include?(bit)
-                if response.length > 0
-                    block.add_response(response[0], response.slice(1, response.length))
-                    response = []
+            if bit == "end"
+                block = Block.new()
+                block.add_trigger(trigger[0], trigger.slice(1, trigger.length))
+                response.each do |resp|
+                    block.add_response(resp[0], resp.slice(1, resp.length))
                 end
 
-                if trigger.length > 0
-                    block.add_trigger(trigger[0], trigger.slice(1, trigger.length))
-                    trigger = []
+                blocks.push(block)
 
-                    blocks.push(block)
-                    block = Block.new()
-                end
-                trigger.push(bit)
+                trigger = nil
+                response = []
+            elsif @allowed_triggers.include?(bit)
+                trigger = [bit]
             elsif @allowed_responses.include?(bit)
-                if response.length > 0
-                    block.add_response(response[0], response.slice(1, response.length))
-                    response = []
-                end
-                response.push(bit)
+                response.push([bit])
             else
                 if response.length > 0
-                    response.push(bit)
+                    response[-1].push(bit)
                 elsif trigger.length > 0
                     trigger.push(bit)
                 end
             end
         end
-
-        # Add remaining bits at the end
-        if trigger.length > 0
-            block.add_trigger(trigger[0], trigger.slice(1, trigger.length))
-        end
-        if response.length > 0
-            block.add_response(response[0], response.slice(1, response.length))
-        end
-        blocks.push(block)
 
         return blocks
     end
