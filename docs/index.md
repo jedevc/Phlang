@@ -188,7 +188,7 @@ bundle install
 ./run_phlang.sh -f path/to/your/bot -r roomname
 
 # (Optional) Host the docs at localhost:8000
-doc/run_docs.sh
+docs/run_docs.sh
 ```
 
 ```run_phlang.sh``` is a simple helper script for running Phlang. You can get

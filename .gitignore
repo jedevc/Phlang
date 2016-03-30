@@ -7,5 +7,5 @@ bots/
 snapshots/
 !snapshots/snapshots_go_here.txt
 
-doc/gen/
-doc/node_modules/
+docs/gen/
+docs/node_modules/

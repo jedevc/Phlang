@@ -1,7 +1,7 @@
 #!/bin/bash
 
 shopt -s extglob
-cd doc
+cd docs
 
 if [[ $1 == "clean" ]]
 then
@@ -12,7 +12,7 @@ else
         npm install docco
     fi
 
-    node_modules/.bin/docco *.md --output gen --layout linear
+    $(npm bin)/docco *.md --output gen --layout linear
 
     cd gen
     python -m http.server
