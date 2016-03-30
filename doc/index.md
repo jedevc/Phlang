@@ -148,9 +148,8 @@ There are 2 options for running your bot.
 
 ### Using the metabot
 
-To access the metabot, navigate to
-[&costofcivilization](euphoria.io/room/costofcivilization) and look for the bot
-called PhlangBot (which is actually written in Phlang itself).
+To access the metabot, navigate to [&bots](euphoria.io/room/bots) and look for
+the bot called PhlangBot (which is actually written in Phlang itself).
 
 | Command                         | Result                                    |
 | :------------------------------ | :---------------------------------------- |

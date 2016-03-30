@@ -41,7 +41,7 @@ if __FILE__ == $0
     # Set default args
     options = {
         :file => [],
-        :room => "costofcivilization",
+        :room => "bots",
         :password => nil,
         :logging => STDOUT,
         :creator => "",
