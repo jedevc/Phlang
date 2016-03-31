@@ -168,7 +168,7 @@ class PhlangBot < Bot
                     room.send_message("Pong!", message["id"])
                 elsif /\A!help @#{name}\Z/.match(content)
                     room.send_message(
-                        "@#{@basename} is a bot created by '#{@creator}' using a top secret project.\n\n" \
+                        "@#{@basename} is a bot created by '#{@creator}' using Phlang.\n\n" \
                         "@#{@basename} responds to !ping, !help, !kill, !pause (and !restore)." \
                     , message["id"])
                 elsif /\A!help\Z/.match(content)

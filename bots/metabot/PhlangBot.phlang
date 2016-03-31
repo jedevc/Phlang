@@ -25,16 +25,16 @@ recover
 end
 
 msg "\A!help\Z"
-reply "Create bots using phlang."
+reply "Create bots using Phlang."
 end
 
 msg "\A!help @PhlangBot\Z"
 reply "
 The Phlang source code is hosted at github.com/jedevc/Phlang.
-Documentation can be viewed at github.com/jedevc/Phlang/blob/master/doc/index.md.
+Documentation can be viewed at github.com/jedevc/Phlang/blob/master/docs/index.md.
 "
 end
 
 msg "\A!help\Z"
-reply "Create bots using the phlang bot language."
+reply "Create bots using the Phlang bot language."
 end
