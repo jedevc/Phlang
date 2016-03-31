@@ -189,14 +189,14 @@ git clone https://github.com/jedevc/Phlang.git
 bundle install
 
 # Run your bot
-./run_phlang.sh -f path/to/your/bot -r roomname
+./phlang -f path/to/your/bot -r roomname
 
 # (Optional) Host the docs at localhost:8000
 docs/run_docs.sh
 ```
 
-```run_phlang.sh``` is a simple helper script for running Phlang. You can get
-more information on it by using ```./run_phlang.sh -h```.
+You can get more information on the options available by running
+```./phlang --help```.
 
 ## Miscellaneous
 

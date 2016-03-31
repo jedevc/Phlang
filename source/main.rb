@@ -52,7 +52,7 @@ if __FILE__ == $0
     # Parse command line args
     begin
         OptionParser.new do |opts|
-            opts.banner = "Usage: ./run_phlang.sh [options]"
+            opts.banner = "Usage: ./phlang [options]"
 
             opts.on("-f FILE", "--file FILE", "Where to load bots from") do |v|
                 options[:file].push(v)
