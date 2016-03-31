@@ -166,7 +166,11 @@ to.
 | ```!kill @bot```                | Kills _@bot_.                             |
 | ```!pause @bot```               | Pauses _@bot_.                            |
 | ```!restore @bot```             | Restores _@bot_.                          |
-| ```!sendbot @bot &room```       | Send _@bot_ to _&room._                   |
+| ```!code @bot```                | Print the code for _@bot_.                |
+| ```!sendbot @bot &room```       | Send _@bot_ to _&room_.                   |
+| ```!creator @bot```             | Get the creator of _@bot_.                |
+
+And then the standard ```!ping``` and ```!help``` commands.
 
 Note that hosting your bot using PhlangBot has a few disadvantages. You cannot
 access certain triggers and responses and there may be certain spam limits
