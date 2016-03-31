@@ -1,10 +1,10 @@
 .bundle/
 vendor/
 
-bots/
+bots/*
 !bots/metabot
 
-snapshots/
+snapshots/*
 !snapshots/snapshots_go_here.txt
 
 docs/gen/
