@@ -198,6 +198,19 @@ docs/run_docs.sh
 ```run_phlang.sh``` is a simple helper script for running Phlang. You can get
 more information on it by using ```./run_phlang.sh -h```.
 
+## Miscellaneous
+
+### Snapshots
+
+Snapshots work significantly differently than in BotBot, so it's definitely
+worth reading (and making sure you understand) this section.
+
+When you create a snapshot, it creates a new file to store it in. All changes
+made to bots are then synced to the latest snapshot that was created. The
+rationale behind this is to prevent changes being lost if Phlang crashes
+suddenly. It does, however, mean that a snapshot is not set in stone and will be
+updated when bots are created, sent to other rooms and killed.
+
 ## Final remarks
 
 Have fun using Phlang! If you have any comments or suggestions, please feel free
