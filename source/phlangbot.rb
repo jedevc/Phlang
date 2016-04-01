@@ -14,6 +14,7 @@ class PhlangBot < Bot
 
         @paused = []
         @spam = {}
+        @spam_delay = 10
         @has_responded = {}
 
         @creator = creator
@@ -76,14 +77,14 @@ class PhlangBot < Bot
         if !@config.spam_limit.nil?
             if !@spam.has_key? room
                 @spam[room] = amount
-                room.timer.onevent(Time.now + 60) do
+                room.timer.onevent(Time.now + @spam_delay) do
                     @spam.delete(room)
                 end
             else
                 @spam[room] += amount
             end
 
-            if @spam[room] >= @config.spam_limit
+            if @spam[room] >= @config.spam_limit * @spam_delay
                 room.send_message("/me has been paused (possible spam attack).")
                 pause(room)
                 return true
