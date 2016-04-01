@@ -1,5 +1,7 @@
 require_relative 'tokenizer'
 
+require_relative 'util'
+
 COUNT_SEPERATOR = '#'
 
 class RPN
@@ -63,10 +65,10 @@ class ShuntContext
 
     def initialize(funcs={})
         basics = [
-            ['*', lambda {|a, b| a.to_i * b.to_i}],
-            ['/', lambda {|a, b| a.to_i / b.to_i if b.to_i != 0}],
-            ['+', lambda {|a, b| a.to_i + b.to_i}],
-            ['-', lambda {|a, b| a.to_i - b.to_i}],
+            ['*', lambda {|a, b| to_number(a) * to_number(b)}],
+            ['/', lambda {|a, b| to_number(a) / to_number(b) if to_number(b) != 0}],
+            ['+', lambda {|a, b| to_number(a) + to_number(b)}],
+            ['-', lambda {|a, b| to_number(a) - to_number(b)}],
             ['_', lambda {|a, b| a.to_s + b.to_s}]
         ]
         @operators = basics.each_with_object({}) {|e, h| h[e[0]] = e[1]}
