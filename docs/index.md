@@ -178,25 +178,8 @@ enforced.
 
 ### Using locally
 
-To host your bot locally, first make sure that Ruby and bundle are installed,
-then simply run the following commands in bash.
-
-```bash
-# Clone the repo
-git clone https://github.com/jedevc/Phlang.git
-
-# Install required dependencies from the Gemfile
-bundle install
-
-# Run your bot
-./phlang -f path/to/your/bot -r roomname
-
-# (Optional) Host the docs at localhost:8000
-docs/run_docs.sh
-```
-
-You can get more information on the options available by running
-```./phlang --help```.
+To host your bot locally, just follow the basic setup instructions in
+[README.md](https://github.com/jedevc/Phlang/blob/master/README.md).
 
 ## Miscellaneous
 
