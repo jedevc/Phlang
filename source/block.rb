@@ -8,18 +8,18 @@ class Block
 
     public
     def add_trigger(trigger)
-        @trigger = [trigger]
+        @trigger = [trigger, []]
     end
 
     def add_response(response)
-        @responses.push([response])
+        @responses.push([response, []])
     end
 
     def add_args(*args)
         if @responses.length > 0
-            @responses[-1].push(*args)
+            @responses[-1][1].push(*args)
         else
-            @trigger.push(*args)
+            @trigger[1].push(*args)
         end
     end
 

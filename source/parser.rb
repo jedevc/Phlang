@@ -23,10 +23,10 @@ class Parser
                 if !trigger.nil? and responses.length > 0
                     block = Block.new()
                     block.add_trigger(trigger[0])
-                    block.add_args(trigger.slice(1, trigger.length))
+                    block.add_args(*trigger.slice(1, trigger.length))
                     responses.each do |resp|
                         block.add_response(resp[0])
-                        block.add_args(resp.slice(1, resp.length))
+                        block.add_args(*resp.slice(1, resp.length))
                     end
                     blocks.push(block)
                 end
