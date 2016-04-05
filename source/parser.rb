@@ -8,16 +8,16 @@ class Parser
         @allowed_triggers = allowed_triggers
         @allowed_responses = allowed_responses
 
-        @bits = Tokens(raw)
+        @bits = Tokens.new(raw)
     end
 
     def parse()
         blocks = []
-
         trigger = nil
         responses = []
 
-        @bits.each do |bit|
+        while !@bits.done? do
+            bit = @bits.eat
             if bit == "end"
                 # Create block from previously collected data
                 if !trigger.nil? and responses.length > 0
