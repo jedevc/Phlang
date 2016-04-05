@@ -7,12 +7,20 @@ class Block
     end
 
     public
-    def add_trigger(trigger, targs)
-        @trigger = [trigger, targs]
+    def add_trigger(trigger)
+        @trigger = [trigger]
     end
 
-    def add_response(response, rargs)
-        @responses.push([response, rargs])
+    def add_response(response)
+        @responses.push([response])
+    end
+
+    def add_args(*args)
+        if @responses.length > 0
+            @responses[-1].push(*args)
+        else
+            @trigger.push(*args)
+        end
     end
 
     def export(allowed_triggers, allowed_responses)
