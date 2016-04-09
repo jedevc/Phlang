@@ -1,7 +1,5 @@
-require 'json'
-require 'yaml/store'
-
 require_relative 'phlangbot'
+require_relative 'botstore'
 
 class BotGroup
     def initialize()
@@ -27,18 +25,19 @@ class BotGroup
         end
     end
 
+    # Force an update of the store
     def force(bot=nil)
-        if @store
+        if !@store.nil?
             @store.transaction do
-                if bot
-                    @store[bot.basename] = bot.to_h
-                else
+                if bot.nil?
                     names = @bots.map {|b| b.basename}
                     bhs = @bots.map {|b| b.to_h}
 
                     Hash[names.zip(bhs)].each do |k, v|
                         @store[k] = v
                     end
+                else
+                    @store[bot.basename] = bot.to_h
                 end
             end
         end
@@ -47,7 +46,8 @@ class BotGroup
     # Create a snapshot
     def save(name)
         filename = File.join("snapshots", name)
-        @store = YAML::Store.new(filename)
+
+        @store = BotStore.new(filename)
 
         force()
 
@@ -94,7 +94,7 @@ class BotGroup
         bot.remove_all_rooms()
         @bots.delete(bot)
 
-        if @store
+        if !@store.nil?
             @store.transaction do
                 @store.delete(bot.basename)
             end
@@ -109,7 +109,7 @@ class BotGroup
         end
         @bots.clear()
 
-        if @store
+        if !@store.nil?
             @store.transaction do
                 @store.roots.each do |r|
                     @store.delete(r)
