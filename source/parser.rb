@@ -44,7 +44,7 @@ class Parser
                 # Arg for trigger/response
                 if responses.length > 0
                     responses[-1].push(bit)
-                elsif trigger.length > 0
+                elsif !trigger.nil?
                     trigger.push(bit)
                 end
             end
