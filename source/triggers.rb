@@ -2,6 +2,14 @@ require_relative 'code'
 
 require_relative 'message'
 
+def rmatch(regex, data)
+    begin
+        return Regexp.new(regex).match(data)
+    rescue RegexpError
+        return nil
+    end
+end
+
 class StartTrigger < Trigger
     def add(bot, response)
         bot.connection_event("snapshot-event") do |m, r|
@@ -22,7 +30,7 @@ class MessageTrigger < Trigger
     end
 
     def perform(response, args, message, room, bot)
-        reg = Regexp.new(args.join).match(message.content)
+        reg = rmatch(args.join, message.content)
         if reg
             response.call(reg, message, room, bot)
         end
@@ -37,7 +45,7 @@ class BroadcastTrigger < Trigger
     end
 
     def perform(response, args, message, room, bot)
-        reg = Regexp.new(args.join).match(message.content)
+        reg = rmatch(args.join, message.content)
         if reg
             response.call(reg, message, room, bot)
         end
@@ -52,7 +60,7 @@ class TimerTrigger < Trigger
     end
 
     def perform(response, args, message, room, bot)
-        reg = Regexp.new(args.slice(1, args.length).join).match(message.content)
+        reg = rmatch(args.slice(1, args.length).join, message.content)
         if reg
             room.timer.onevent(Time.now + args[0].to_i) do
                 response.call(reg, message, room, bot)
@@ -76,7 +84,7 @@ class PushTimerTrigger < Trigger
     end
 
     def perform(response, args, message, room, bot)
-        reg = Regexp.new(args.slice(1, args.length).join).match(message.content)
+        reg = rmatch(args.slice(1, args.length).join, message.content)
         if reg
             if @ending.include?(room)
                 @ending[room] = Time.now + args[0].to_i
@@ -118,7 +126,7 @@ class EveryTrigger < Trigger
     end
 
     def perform(response, args, message, room, bot)
-        reg = Regexp.new(args.slice(1, args.length).join).match(message.content)
+        reg = rmatch(args.slice(1, args.length).join, message.content)
         if reg
             @counts += 1
         end
