@@ -32,11 +32,18 @@ class Responses
         return false
     end
 
+    def self.response_nick(data, message, room, bot)
+        if !bot.spam(room)
+            room.send_nick(data[-1])
+        end
+        return false
+    end
+
     @@key = {
         "send" => Responses.method(:response_send),
         "reply" => Responses.method(:response_reply),
         # "broadcast" => Responses.method(:response_broadcast),
-        # "nick" => Responses.method(:response_nick),
+        "nick" => Responses.method(:response_nick),
         # "set" => Responses.method(:response_set),
         # "breakif" => Responses.method(:response_breakif)
     }
