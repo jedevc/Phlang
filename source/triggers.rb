@@ -36,10 +36,20 @@ class Triggers
         end
     end
 
+    def self.trigger_receive(data, bot, callback)
+        bot.broadcast_event do |m, r|
+            message = Message.new(m, "bot", nil, Time.now.to_i)
+            reg = rmatch(data.join, message.content)
+            if reg
+                callback.call(TriggerData.new(reg), message, r, bot)
+            end
+        end
+    end
+
     @@key = {
         # "start" => StartTrigger.method(:new),
         "msg" => Triggers.method(:trigger_msg),
-        # "receive" => BroadcastTrigger.method(:new),
+        "receive" => Triggers.method(:trigger_receive),
         # "timer" => TimerTrigger.method(:new),
         # "ptimer" => PushTimerTrigger.method(:new),
         # "every" => EveryTrigger.method(:new)
@@ -55,36 +65,6 @@ end
 #
 #     def perform(response, args, message, room, bot)
 #         response.call(nil, message, room, bot)
-#     end
-# end
-#
-# class MessageTrigger < Trigger
-#     def add(bot, response)
-#         bot.connection_event("send-event") do |m, r|
-#             trigger(response, Message.new(m), r, bot)
-#         end
-#     end
-#
-#     def perform(response, args, message, room, bot)
-#         reg = rmatch(args.join, message.content)
-#         if reg
-#             response.call(reg, message, room, bot)
-#         end
-#     end
-# end
-#
-# class BroadcastTrigger < Trigger
-#     def add(bot, response)
-#         bot.broadcast_event do |m, r|
-#             trigger(response, Message.new(m, "bot", nil, Time.now.to_i), r, bot)
-#         end
-#     end
-#
-#     def perform(response, args, message, room, bot)
-#         reg = rmatch(args.join, message.content)
-#         if reg
-#             response.call(reg, message, room, bot)
-#         end
 #     end
 # end
 #

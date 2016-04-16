@@ -32,6 +32,13 @@ class Responses
         return false
     end
 
+    def self.response_broadcast(data, message, room, bot)
+        data.each do |d|
+            room.broadcast.trigger(d)
+        end
+        return false
+    end
+
     def self.response_nick(data, message, room, bot)
         if !bot.spam(room)
             room.send_nick(data[-1])
@@ -42,30 +49,13 @@ class Responses
     @@key = {
         "send" => Responses.method(:response_send),
         "reply" => Responses.method(:response_reply),
-        # "broadcast" => Responses.method(:response_broadcast),
+        "broadcast" => Responses.method(:response_broadcast),
         "nick" => Responses.method(:response_nick),
         # "set" => Responses.method(:response_set),
         # "breakif" => Responses.method(:response_breakif)
     }
 end
 
-# class BroadcastResponse < Response
-#     def perform(args, message, room, bot)
-#         args.each do |a|
-#             room.broadcast.trigger(a)
-#         end
-#         return false
-#     end
-# end
-#
-# class NickResponse < Response
-#     def perform(args, message, room, bot)
-#         bot.spam(room)
-#         room.send_nick(args[-1])
-#         return false
-#     end
-# end
-#
 # class SetResponse < Response
 #     def perform(args, message, room, bot)
 #         if args.length == 2
