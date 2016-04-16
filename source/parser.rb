@@ -16,7 +16,11 @@ class Parser
     end
 
     def parse
-        return block()
+        blocks = []
+        while !accept(EOFToken)
+            blocks << block()
+        end
+        return MultiNode.new(*blocks)
     end
 
     private
@@ -120,7 +124,7 @@ class Parser
             trig.attach(response())
         end
 
-        return ApplyNode.new(trig) {|t, c| t.perform(c)}
+        return MultiNode.new(trig)
     end
 end
 
