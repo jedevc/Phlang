@@ -101,20 +101,11 @@ class PhlangBot < Bot
 
     private
     # Load code from blocks of code
-    def load_code(blocks)
-        blocks.each do |b|
-            tr = nil
-
-            begin
-                tr = b.export(@config.allowed_triggers, @config.allowed_responses)
-            rescue RuntimeError => e
-                LogService.warn "error parsing code: #{e.inspect}"
-            end
-
-            if tr
-                trigger, response = tr
-                trigger.add(self, response)
-            end
+    def load_code(root)
+        context = ExecutionContext.new
+        root.perform(context)
+        context.triggers.each do |trig|
+            trig.call(self)
         end
     end
 

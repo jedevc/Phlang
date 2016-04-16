@@ -1,55 +1,207 @@
-require_relative 'factory'
-require_relative 'block'
+require_relative 'tokenizer'
 
-require_relative 'expression'
+require_relative 'triggers'
+require_relative 'responses'
+
+class ParseError < RuntimeError
+end
 
 class Parser
-    def initialize(raw, allowed_triggers, allowed_responses)
-        @allowed_triggers = allowed_triggers
-        @allowed_responses = allowed_responses
+    def initialize(raw, atriggers=nil, aresponses=nil)
+        @allowed_triggers = atriggers
+        @allowed_responses = aresponses
 
-        @bits = Tokens.new(raw)
+        @tokens = Tokenizer.new(raw, Triggers.keys, Responses.keys)
+        @tokens.next_token()
     end
 
-    def parse()
-        blocks = []
-        trigger = nil
-        responses = []
+    def parse
+        return block()
+    end
 
-        while !@bits.done? do
-            bit = @bits.eat
-            if bit == "end"
-                # Create block from previously collected data
-                if !trigger.nil? and responses.length > 0
-                    block = Block.new()
-                    block.add_trigger(trigger[0])
-                    block.add_args(*trigger.slice(1, trigger.length))
-                    responses.each do |resp|
-                        block.add_response(resp[0])
-                        block.add_args(*resp.slice(1, resp.length))
-                    end
-                    blocks.push(block)
-                end
+    private
+    def accept(ttype, lex=nil)
+        lt = @tokens.last_token
+        if lt.is_a? ttype
+            if lex.nil? or (lt.respond_to? "lexeme" and lt.lexeme == lex)
+                @tokens.next_token()
+                return lt
+            end
+        else
+            return nil
+        end
+    end
 
-                # Reset vars
-                trigger = nil
-                responses = []
-            elsif @allowed_triggers.include?(bit)
-                # New trigger
-                trigger = [bit]
-            elsif @allowed_responses.include?(bit)
-                # New response
-                responses.push([bit])
+    def expect(ttype, lex=nil)
+        ret = accept(ttype, lex)
+        return ret if ret
+        raise "expected #{ttype} and got #{ret.class}"
+    end
+
+    def factor
+        tok = @tokens.last_token
+        if accept(NumberToken) or accept(StringToken)
+            return RawNode.new(tok.lexeme)
+        elsif accept(LeftParenToken)
+            exp = expression()
+            expect(RightParenToken)
+            return exp
+        elsif accept(IdentifierToken)
+            if accept(LeftParenToken)
+                fn = FunctionNode.new(tok.lexeme, expression())
+                expect(RightParenToken)
+                return fn
             else
-                # Arg for trigger/response
-                if responses.length > 0
-                    responses[-1].push(bit)
-                elsif !trigger.nil?
-                    trigger.push(bit)
+                return VariableNode.new(tok.lexeme)
+            end
+        end
+    end
+
+    def term
+        root = factor()
+        loop do
+            if accept(OpToken, '*')
+                num = factor()
+                root = MultiNode.new(root, num) {|n1, n2, c| n1.perform(c) * n2.perform(c)}
+            elsif accept(OpToken, '/')
+                num = factor()
+                root = MultiNode.new(root, num) {|n1, n2, c| n1.perform(c) / n2.perform(c)}
+            else
+                return root
+            end
+        end
+    end
+
+    def expression
+        root = term()
+        loop do
+            if accept(OpToken, '+')
+                num = term()
+                root = MultiNode.new(root, num) {|n1, n2, c| n1.perform(c) + n2.perform(c)}
+            elsif accept(OpToken, '-')
+                num = term()
+                root = MultiNode.new(root, num) {|n1, n2, c| n1.perform(c) - n2.perform(c)}
+            else
+                return root
+            end
+        end
+    end
+
+    def trigger
+        trig = expect(TriggerToken).lexeme
+        expn = expression()
+
+        return TriggerNode.new(trig, expn)
+    end
+
+    def response
+        resp = expect(ResponseToken).lexeme
+        expn = expression()
+
+        return ResponseNode.new(resp, expn)
+    end
+
+    def block
+        trig = trigger()
+        loop do
+            break if accept(EndToken)
+            trig.attach(response())
+        end
+
+        return MultiNode.new(trig) {|t, c| t.perform(c)}
+    end
+end
+
+class ExecutionContext
+    attr_accessor :variables
+    attr_accessor :functions
+
+    attr_accessor :triggers
+
+    def initialize()
+        @variables = {}
+        @functions = {}
+
+        @triggers = []
+    end
+end
+
+class Node
+    def perform(context)
+    end
+end
+
+class RawNode < Node
+    def initialize(value)
+        @value = value
+    end
+
+    def perform(context)
+        return @value
+    end
+end
+
+class VariableNode < Node
+    def initialize(name)
+        @name = name
+    end
+
+    def perform(context)
+        return context.variables[@name]
+    end
+end
+
+class FunctionNode < Node
+    def initialize(name, *args)
+        @name = name
+        @args = args
+    end
+
+    def perform(context)
+        return context.functions[@name].call(*@args.map{|a| a.perform(context)})
+    end
+end
+
+class MultiNode < Node
+    def initialize(*values, &blk)
+        @values = values
+        @f = blk
+    end
+
+    def perform(context)
+        return @f.call(*@values, context)
+    end
+end
+
+class TriggerNode < Node
+    def initialize(name, exp)
+        @name = name
+        @expression = exp
+        @resps = []
+    end
+
+    def attach(resp)
+        @resps << resp
+    end
+
+    def perform(context)
+        context.triggers << lambda do |bot|
+            Triggers.trigger(@name, @expression.perform(context), bot) do |trigdata, message, room, bot|
+                @resps.each do |r|
+                    r.perform(context, message, room, bot)
                 end
             end
         end
+    end
+end
 
-        return blocks
+class ResponseNode < Node
+    def initialize(name, exp)
+        @name = name
+        @expression = exp
+    end
+
+    def perform(context, message, room, bot)
+        Responses.respond(@name, @expression.perform(context), message, room, bot)
     end
 end

@@ -1,83 +1,146 @@
-QUOTE_TYPES = ["'", '"']
+QUOTES = ["'", '"']
+OPS = ['+', '-', '*', '/', '_']
 
-class Tokens
-    def initialize(raw)
-        @tokens = []
-        tokenize(raw)
+class BaseToken
+    def initialize()
+    end
+end
+class VariadicToken < BaseToken
+    attr_reader :lexeme
+    def initialize(lexeme)
+        @lexeme = lexeme
+        super()
+    end
+end
 
-        @readpt = -1
+class OpToken < VariadicToken
+end
+class LeftParenToken < BaseToken
+end
+class RightParenToken < BaseToken
+end
+class EndToken < BaseToken
+end
+class EOFToken < BaseToken
+end
+class UnknownToken < BaseToken
+end
+
+class TriggerToken < VariadicToken
+end
+class ResponseToken < VariadicToken
+end
+
+class IdentifierToken < VariadicToken
+end
+
+class StringToken < VariadicToken
+end
+class NumberToken < VariadicToken
+end
+
+class Tokenizer
+    attr_reader :last_token
+
+    def initialize(raw, atriggers, aresponses)
+        @raw = raw
+        @atriggers = atriggers
+        @aresponses = aresponses
+
+        @position = 0
+        @last_char = nil
+        @last_token = nil
+
+        next_char()
     end
 
     public
-    def eat()
-        if @readpt + 1 < @tokens.length
-            @readpt += 1
-            return @tokens[@readpt]
+    def next_token()
+        if @last_char.nil?
+            @last_token = EOFToken.new()
+        elsif /\s/ =~ @last_char
+            next_char()
+            next_token()
+        elsif @last_char == '('
+            @last_token = LeftParenToken.new
+            next_char()
+        elsif @last_char == ')'
+            @last_token = RightParenToken.new
+            next_char()
+        elsif QUOTES.include? @last_char
+            quotet = @last_char
+            @last_token = StringToken.new(read_while {|c| c != quotet})
+            next_char()
+        elsif OPS.include? @last_char
+            @last_token = OpToken.new(@last_char)
+            next_char()
+        elsif /\d/ =~ @last_char
+            first = @last_char
+            full = first + read_while {|c| /\d/ =~ c}
+            @last_token = NumberToken.new(full.to_i)
+        elsif /[a-zA-Z]/ =~ @last_char
+            first = @last_char
+            full = first + read_while {|c| /[a-zA-Z0-9]/ =~ c}
+            if full == "end"
+                @last_token = EndToken.new
+            elsif @atriggers.include? full
+                @last_token = TriggerToken.new(full)
+            elsif @aresponses.include? full
+                @last_token = ResponseToken.new(full)
+            else
+                @last_token = IdentifierToken.new(full)
+            end
         else
-            return nil
+            @last_token = UnknownToken.new
+            next_char()
         end
-    end
-
-    def feed(token)
-        @readpt -= 1
-    end
-
-    def done?
-        return (@readpt + 1 >= @tokens.length)
+        return @last_token
     end
 
     private
-    def tokenize(raw)
-        @tokens = []
-        last = ""
-
-        quotes = nil
-        comment = false
-
-        raw.each_char do |c|
-            if /\s/.match(c)
-                if quotes or comment
-                    last += c
+    def read_while(&blk)
+        cs = ""
+        loop do
+            c = next_char()
+            if c.nil?
+                return cs
+            elsif c == "\\"
+                c = next_char()
+                if c == 'n'
+                    cs += "\n"
                 else
-                    if last.length > 0
-                        @tokens.push(last)
-                        last = ""
-                    end
+                    cs += c
                 end
-            elsif c == '#' and !quotes
-                if !comment and last.length > 0
-                    tokens.push(last)
-                end
-                last = ""
-                comment = !comment
-            elsif QUOTE_TYPES.include? c and (not quotes or quotes == c) and !comment
-                if quotes
-                    if last.length > 0 or quotes
-                        @tokens.push(last)
-                        last = ""
-                    end
-                    quotes = nil
-                elsif !quotes
-                    quotes = c
-                end
-            elsif last[-1] == '\\' and c == 'n'
-                last = last.slice(0, last.length-1) + "\n"
             else
-                last += c
-            end
-
-            op = /([^\w\s.])$/.match(last)
-            if op and !quotes and !comment
-                first = last.slice(0, last.length - op[1].length)
-                if first.length > 0
-                    @tokens.push(first)
+                if blk.call(c, cs)
+                    cs += c
+                else
+                    return cs
                 end
-                @tokens.push(op[1])
-                last = ""
             end
         end
-        if last.length > 0
-            @tokens.push(last)
+    end
+
+    def next_char()
+        if @position < @raw.length
+            comment = false
+            loop do
+                @last_char = @raw[@position]
+                @position += 1
+
+                if @last_char == '#'
+                    comment = !comment
+                    next
+                end
+                next if comment
+
+                break
+            end
+
+            return @last_char
+        else
+            @last_char = nil
+            return nil
         end
     end
 end

@@ -1,4 +1,5 @@
-require_relative 'factory'
+require_relative 'triggers'
+require_relative 'responses'
 
 class PhlangBotConfig
     attr_reader :builtins
@@ -60,11 +61,11 @@ NO_BUILTINS = BuiltinConfig.new(false, false, false)
 MINIMAL_BUILTINS = BuiltinConfig.new(false, false, true)
 FULL_BUILTINS = BuiltinConfig.new(true, true, true)
 
-MINIMAL_TRIGGERS = TriggerFactory.triggers.keys
+MINIMAL_TRIGGERS = Triggers.keys
 FULL_TRIGGERS = MINIMAL_TRIGGERS
 
-MINIMAL_RESPONSES = ResponseFactory.responses.keys
-FULL_RESPONSES = MINIMAL_RESPONSES + ResponseFactory.advanced_responses.keys
+MINIMAL_RESPONSES = Responses.keys
+FULL_RESPONSES = MINIMAL_RESPONSES
 
 LOW_SECURITY = PhlangBotConfig.new(MINIMAL_BUILTINS, FULL_TRIGGERS, FULL_RESPONSES, nil)
 HIGH_SECURITY = PhlangBotConfig.new(FULL_BUILTINS, MINIMAL_TRIGGERS, MINIMAL_RESPONSES, 0.5)
