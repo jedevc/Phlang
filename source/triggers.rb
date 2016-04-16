@@ -29,7 +29,7 @@ class Triggers
     def self.trigger_msg(data, bot, callback)
         bot.connection_event("send-event") do |m, r|
             message = Message.new(m)
-            reg = rmatch(data, message.content)
+            reg = rmatch(data.join, message.content)
             if reg
                 callback.call(TriggerData.new(reg), message, r, bot)
             end

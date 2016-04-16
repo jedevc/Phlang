@@ -62,10 +62,10 @@ class Parser
         loop do
             if accept(OpToken, '*')
                 num = factor()
-                root = MultiNode.new(root, num) {|n1, n2, c| n1.perform(c) * n2.perform(c)}
+                root = ApplyNode.new(root, num) {|n1, n2, c| n1.perform(c) * n2.perform(c)}
             elsif accept(OpToken, '/')
                 num = factor()
-                root = MultiNode.new(root, num) {|n1, n2, c| n1.perform(c) / n2.perform(c)}
+                root = ApplyNode.new(root, num) {|n1, n2, c| n1.perform(c) / n2.perform(c)}
             else
                 return root
             end
@@ -77,28 +77,40 @@ class Parser
         loop do
             if accept(OpToken, '+')
                 num = term()
-                root = MultiNode.new(root, num) {|n1, n2, c| n1.perform(c) + n2.perform(c)}
+                root = ApplyNode.new(root, num) {|n1, n2, c| n1.perform(c) + n2.perform(c)}
             elsif accept(OpToken, '-')
                 num = term()
-                root = MultiNode.new(root, num) {|n1, n2, c| n1.perform(c) - n2.perform(c)}
+                root = ApplyNode.new(root, num) {|n1, n2, c| n1.perform(c) - n2.perform(c)}
             else
                 return root
             end
         end
     end
 
+    def group
+        parts = [expression()]
+        loop do
+            if accept(SeperatorToken)
+                parts << expression()
+            else
+                break
+            end
+        end
+        return MultiNode.new(*parts)
+    end
+
     def trigger
         trig = expect(TriggerToken).lexeme
-        expn = expression()
+        grp = group()
 
-        return TriggerNode.new(trig, expn)
+        return TriggerNode.new(trig, grp)
     end
 
     def response
         resp = expect(ResponseToken).lexeme
-        expn = expression()
+        grp = group()
 
-        return ResponseNode.new(resp, expn)
+        return ResponseNode.new(resp, grp)
     end
 
     def block
@@ -108,7 +120,7 @@ class Parser
             trig.attach(response())
         end
 
-        return MultiNode.new(trig) {|t, c| t.perform(c)}
+        return ApplyNode.new(trig) {|t, c| t.perform(c)}
     end
 end
 
@@ -162,7 +174,7 @@ class FunctionNode < Node
     end
 end
 
-class MultiNode < Node
+class ApplyNode < Node
     def initialize(*values, &blk)
         @values = values
         @f = blk
@@ -170,6 +182,16 @@ class MultiNode < Node
 
     def perform(context)
         return @f.call(*@values, context)
+    end
+end
+
+class MultiNode < Node
+    def initialize(*groups)
+        @groups = groups
+    end
+
+    def perform(context)
+        return @groups.map {|n| n.perform(context)}
     end
 end
 

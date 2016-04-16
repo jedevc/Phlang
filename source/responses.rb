@@ -15,15 +15,19 @@ class Responses
 
     private
     def self.response_send(data, message, room, bot)
-        if !bot.spam(room)
-            room.send_message(data)
+        data.each do |d|
+            if !bot.spam(room)
+                room.send_message(d)
+            end
         end
         return false
     end
 
     def self.response_reply(data, message, room, bot)
-        if !bot.spam(room)
-            room.send_message(data, message.id)
+        data.each do |d|
+            if !bot.spam(room)
+                room.send_message(d, message.id)
+            end
         end
         return false
     end
@@ -38,25 +42,6 @@ class Responses
     }
 end
 
-# class SendResponse < Response
-#     def perform(message, room, bot)
-#         if !bot.spam(room)
-#             room.send_message(a)
-#         end
-#         return false
-#     end
-# end
-#
-# class ReplyResponse < Response
-#     def perform(message, room, bot)
-#         args.each do |a|
-#             break if bot.spam(room)
-#             room.send_message(a, message.id)
-#         end
-#         return false
-#     end
-# end
-#
 # class BroadcastResponse < Response
 #     def perform(args, message, room, bot)
 #         args.each do |a|

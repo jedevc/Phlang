@@ -22,6 +22,8 @@ class LeftParenToken < BaseToken
 end
 class RightParenToken < BaseToken
 end
+class SeperatorToken < BaseToken
+end
 class EndToken < BaseToken
 end
 class EOFToken < BaseToken
@@ -69,6 +71,9 @@ class Tokenizer
             next_char()
         elsif @last_char == ')'
             @last_token = RightParenToken.new
+            next_char()
+        elsif @last_char == ','
+            @last_token = SeperatorToken.new
             next_char()
         elsif QUOTES.include? @last_char
             quotet = @last_char
