@@ -187,8 +187,16 @@ class TriggerNode < Node
     def perform(context)
         context.triggers << lambda do |bot|
             Triggers.trigger(@name, @expression.perform(context), bot) do |trigdata, message, room, bot|
+                trigdata.rmatches.to_a.each_index do |i|
+                    context.variables["$#{i}"] = trigdata.rmatches[i]
+                end
+
                 @resps.each do |r|
                     r.perform(context, message, room, bot)
+                end
+
+                trigdata.rmatches.to_a.each_index do |i|
+                    context.variables.delete("$#{i}")
                 end
             end
         end

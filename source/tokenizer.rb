@@ -1,6 +1,9 @@
 QUOTES = ["'", '"']
 OPS = ['+', '-', '*', '/', '_']
 
+DIGIT = /\d/
+IDENTICHAR = /[a-zA-Z$]/
+
 class BaseToken
     def initialize()
     end
@@ -74,11 +77,11 @@ class Tokenizer
         elsif OPS.include? @last_char
             @last_token = OpToken.new(@last_char)
             next_char()
-        elsif /\d/ =~ @last_char
+        elsif DIGIT =~ @last_char
             first = @last_char
             full = first + read_while {|c| /\d/ =~ c}
             @last_token = NumberToken.new(full.to_i)
-        elsif /[a-zA-Z]/ =~ @last_char
+        elsif IDENTICHAR =~ @last_char
             first = @last_char
             full = first + read_while {|c| /[a-zA-Z0-9]/ =~ c}
             if full == "end"
@@ -109,7 +112,7 @@ class Tokenizer
                 if c == 'n'
                     cs += "\n"
                 else
-                    cs += c
+                    cs += '\\' + c
                 end
             else
                 if blk.call(c, cs)
