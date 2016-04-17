@@ -46,13 +46,25 @@ class Triggers
         end
     end
 
+    def self.trigger_timer(data, bot, callback)
+        bot.connection_event("send-event") do |m, r|
+            message = Message.new(m)
+            reg = rmatch(data.slice(1, data.length).join, message.content)
+            if reg
+                r.timer.onevent(Time.now + data[0].to_i) do
+                    callback.call(TriggerData.new(reg), message, r, bot)
+                end
+            end
+        end
+    end
+
     @@key = {
         # "start" => StartTrigger.method(:new),
         "msg" => Triggers.method(:trigger_msg),
         "receive" => Triggers.method(:trigger_receive),
-        # "timer" => TimerTrigger.method(:new),
-        # "ptimer" => PushTimerTrigger.method(:new),
-        # "every" => EveryTrigger.method(:new)
+        "timer" => Triggers.method(:trigger_timer),
+        # "ptimer" => Triggers.method(:trigger_ptimer),
+        # "every" => Trigger.method(:trigger_every)
     }
 end
 
@@ -65,23 +77,6 @@ end
 #
 #     def perform(response, args, message, room, bot)
 #         response.call(nil, message, room, bot)
-#     end
-# end
-#
-# class TimerTrigger < Trigger
-#     def add(bot, response)
-#         bot.connection_event("send-event") do |m, r|
-#             trigger(response, Message.new(m), r, bot)
-#         end
-#     end
-#
-#     def perform(response, args, message, room, bot)
-#         reg = rmatch(args.slice(1, args.length).join, message.content)
-#         if reg
-#             room.timer.onevent(Time.now + args[0].to_i) do
-#                 response.call(reg, message, room, bot)
-#             end
-#         end
 #     end
 # end
 #
