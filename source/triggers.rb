@@ -18,11 +18,11 @@ end
 class Triggers
     public
     def self.trigger(rtype, data, bot, &blk)
-        @@key[rtype].call(data, bot, blk)
+        @@merged[rtype].call(data, bot, blk)
     end
 
-    def self.keys
-        return @@key.keys
+    def self.simple
+        return @@simple.keys
     end
 
     private
@@ -58,7 +58,7 @@ class Triggers
         end
     end
 
-    @@key = {
+    @@simple = {
         # "start" => StartTrigger.method(:new),
         "msg" => Triggers.method(:trigger_msg),
         "receive" => Triggers.method(:trigger_receive),
@@ -66,6 +66,8 @@ class Triggers
         # "ptimer" => Triggers.method(:trigger_ptimer),
         # "every" => Trigger.method(:trigger_every)
     }
+
+    @@merged = @@simple
 end
 
 # class StartTrigger < Trigger

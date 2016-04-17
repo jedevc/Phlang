@@ -5,12 +5,15 @@ class Responses
         if bot.paused? room
             return false
         else
-            return @@key[rtype].call(data, message, room, bot)
+            return @@merged[rtype].call(data, message, room, bot)
         end
     end
 
-    def self.keys
-        return @@key.keys
+    def self.simple
+        return @@simple.keys
+    end
+    def self.advanced
+        return @@advanced.keys
     end
 
     private
@@ -50,13 +53,24 @@ class Responses
         return data.length == 2 && data[0].to_s == data[1].to_s
     end
 
-    @@key = {
+    @@simple = {
         "send" => Responses.method(:response_send),
         "reply" => Responses.method(:response_reply),
         "broadcast" => Responses.method(:response_broadcast),
         "nick" => Responses.method(:response_nick),
         "breakif" => Responses.method(:response_breakif)
     }
+
+    def self.response_log(data, message, room, bot)
+        LogService.info "@#{room.nick} logged: #{data.join}"
+        return false
+    end
+
+    @@advanced = {
+        "log" => Responses.method(:response_log)
+    }
+
+    @@merged = @@simple.merge(@@advanced)
 end
 
 # class CreateResponse < Response
@@ -71,14 +85,6 @@ end
 #             nb.add_room(r)
 #             bot.group.add(nb)
 #         end
-#         return false
-#     end
-# end
-#
-# class LogResponse < Response
-#     def perform(args, message, room, bot)
-#         message = args.join("")
-#         LogService.info "@#{room.nick} logged: #{message}"
 #         return false
 #     end
 # end

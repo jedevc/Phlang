@@ -61,11 +61,11 @@ NO_BUILTINS = BuiltinConfig.new(false, false, false)
 MINIMAL_BUILTINS = BuiltinConfig.new(false, false, true)
 FULL_BUILTINS = BuiltinConfig.new(true, true, true)
 
-MINIMAL_TRIGGERS = Triggers.keys
+MINIMAL_TRIGGERS = Triggers.simple
 FULL_TRIGGERS = MINIMAL_TRIGGERS
 
-MINIMAL_RESPONSES = Responses.keys
-FULL_RESPONSES = MINIMAL_RESPONSES
+MINIMAL_RESPONSES = Responses.simple
+FULL_RESPONSES = Responses.simple + Responses.advanced
 
 LOW_SECURITY = PhlangBotConfig.new(MINIMAL_BUILTINS, FULL_TRIGGERS, FULL_RESPONSES, nil)
 HIGH_SECURITY = PhlangBotConfig.new(FULL_BUILTINS, MINIMAL_TRIGGERS, MINIMAL_RESPONSES, 0.5)

@@ -3,15 +3,12 @@ require_relative 'tokenizer'
 require_relative 'triggers'
 require_relative 'responses'
 
-class ParseError < RuntimeError
-end
-
 class Parser
     def initialize(raw, atriggers=nil, aresponses=nil)
         @allowed_triggers = atriggers
         @allowed_responses = aresponses
 
-        @tokens = Tokenizer.new(raw, Triggers.keys, Responses.keys)
+        @tokens = Tokenizer.new(raw, Triggers.simple, Responses.simple + Responses.advanced)
         @tokens.next_token()
     end
 
@@ -121,9 +118,12 @@ class Parser
 
             return SetResponseNode.new(tok.lexeme, rest)
         elsif accept(ResponseToken)
-            grp = group()
-
-            return ResponseNode.new(tok.lexeme, grp)
+            if @allowed_responses.include? tok.lexeme
+                grp = group()
+                return ResponseNode.new(tok.lexeme, grp)
+            else
+                raise "no permissions to use #{tok.lexeme}"
+            end
         end
     end
 
