@@ -1,5 +1,8 @@
 require_relative 'logservice'
 
+require_relative 'phlangbot'
+require_relative 'room'
+
 class Responses
     def self.respond(rtype, data, message, room, bot)
         if bot.paused? room
@@ -61,47 +64,45 @@ class Responses
         "breakif" => Responses.method(:response_breakif)
     }
 
+    def self.response_create(data, message, room, bot)
+        if data.length >= 2
+            nick = data[0]
+            code = data.slice(1, data.length).join
+
+            conf = HIGH_SECURITY
+            nb = PhlangBot.new(nick, code, conf, message.sender)
+            r = Room.new(room.name, room.password)
+            nb.add_room(r)
+            bot.group.add(nb)
+        end
+        return false
+    end
+
     def self.response_log(data, message, room, bot)
         LogService.info "@#{room.nick} logged: #{data.join}"
         return false
     end
 
+    def self.response_list(data, message, room, bot)
+        msg = ""
+        bot.group.each do |b|
+            name = b.basename
+            rooms = b.room_names.map {|r| "&#{r}"}
+            msg += "@#{name} in [#{rooms.join(", ")}]\n"
+        end
+        room.send_message(msg, message.id)
+        return false
+    end
+
     @@advanced = {
-        "log" => Responses.method(:response_log)
+        "log" => Responses.method(:response_log),
+        "create" => Responses.method(:response_create),
+        "list" => Responses.method(:response_list)
     }
 
     @@merged = @@simple.merge(@@advanced)
 end
 
-# class CreateResponse < Response
-#     def perform(args, message, room, bot)
-#         if args.length >= 2
-#             nick = args[0]
-#             code = args.slice(1, args.length).join(" ")
-#
-#             conf = HIGH_SECURITY
-#             nb = PhlangBot.new(nick, code, conf, message.sender)
-#             r = Room.new(room.name, room.password)
-#             nb.add_room(r)
-#             bot.group.add(nb)
-#         end
-#         return false
-#     end
-# end
-#
-# class ListResponse < Response
-#     def perform(args, message, room, bot)
-#         msg = ""
-#         bot.group.each do |b|
-#             name = b.basename
-#             rooms = b.room_names.map {|r| "&#{r}"}
-#             msg += "@#{name} in [#{rooms.join(", ")}]\n"
-#         end
-#         room.send_message(msg, message.id)
-#         return false
-#     end
-# end
-#
 # class SaveResponse < Response
 #     def perform(args, message, room, bot)
 #         if args.length > 0

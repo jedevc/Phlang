@@ -55,6 +55,8 @@ class Parser
             else
                 return VariableNode.new(tok.lexeme)
             end
+        else
+            return NilNode.new
         end
     end
 
@@ -155,6 +157,9 @@ end
 class Node
     def perform(context)
     end
+end
+
+class NilNode < Node
 end
 
 class RawNode < Node
