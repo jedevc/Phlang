@@ -46,39 +46,19 @@ class Responses
         return false
     end
 
+    def self.response_breakif(data, message, room, bot)
+        return data.length == 2 && data[0].to_s == data[1].to_s
+    end
+
     @@key = {
         "send" => Responses.method(:response_send),
         "reply" => Responses.method(:response_reply),
         "broadcast" => Responses.method(:response_broadcast),
         "nick" => Responses.method(:response_nick),
-        # "set" => Responses.method(:response_set),
-        # "breakif" => Responses.method(:response_breakif)
+        "breakif" => Responses.method(:response_breakif)
     }
 end
 
-# class SetResponse < Response
-#     def perform(args, message, room, bot)
-#         if args.length == 2
-#             var = args[0]
-#             val = args[1]
-#             bot.variables(room)[var] = val
-#         end
-#         return false
-#     end
-# end
-#
-# class BreakResponse < Response
-#     def perform(args, message, room, bot)
-#         if args.length == 2
-#             first = args[0]
-#             second = args[1]
-#
-#             return first == second
-#         end
-#         return false
-#     end
-# end
-#
 # class CreateResponse < Response
 #     def perform(args, message, room, bot)
 #         if args.length >= 2

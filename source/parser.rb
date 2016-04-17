@@ -228,7 +228,7 @@ class TriggerNode < Node
                 end
 
                 @resps.each do |r|
-                    r.perform(context, message, room, bot)
+                    break if r.perform(context, message, room, bot)
                 end
 
                 trigdata.rmatches.to_a.each_index do |i|
@@ -246,7 +246,7 @@ class ResponseNode < Node
     end
 
     def perform(context, message, room, bot)
-        Responses.respond(@name, @expression.perform(context), message, room, bot)
+        return Responses.respond(@name, @expression.perform(context), message, room, bot)
     end
 end
 
