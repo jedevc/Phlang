@@ -10,7 +10,7 @@ end
 
 class TriggerData
     attr_reader :rmatches
-    def initialize(rmatches)
+    def initialize(rmatches=nil)
         @rmatches = rmatches
     end
 end
@@ -26,6 +26,12 @@ class Triggers
     end
 
     private
+    def self.trigger_start(data, bot, callback)
+        bot.connection_event("snapshot-event") do |m, r|
+            callback.call(TriggerData.new, Message.new(), r, bot)
+        end
+    end
+
     def self.trigger_msg(data, bot, callback)
         bot.connection_event("send-event") do |m, r|
             message = Message.new(m)
@@ -59,7 +65,7 @@ class Triggers
     end
 
     @@simple = {
-        # "start" => StartTrigger.method(:new),
+        "start" => Triggers.method(:trigger_start),
         "msg" => Triggers.method(:trigger_msg),
         "receive" => Triggers.method(:trigger_receive),
         "timer" => Triggers.method(:trigger_timer),
@@ -70,18 +76,6 @@ class Triggers
     @@merged = @@simple
 end
 
-# class StartTrigger < Trigger
-#     def add(bot, response)
-#         bot.connection_event("snapshot-event") do |m, r|
-#             trigger(response, Message.new(), r, bot)
-#         end
-#     end
-#
-#     def perform(response, args, message, room, bot)
-#         response.call(nil, message, room, bot)
-#     end
-# end
-#
 # class PushTimerTrigger < Trigger
 #     def initialize(*args)
 #         super(*args)
