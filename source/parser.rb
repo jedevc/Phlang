@@ -85,6 +85,9 @@ class Parser
             elsif accept(OpToken, '-')
                 num = term()
                 root = ApplyNode.new(root, num) {|n1, n2, c| n1.perform(c) - n2.perform(c)}
+            elsif accept(OpToken, '_')
+                num = term()
+                root = ApplyNode.new(root, num) {|n1, n2, c| n1.perform(c).to_s + n2.perform(c).to_s}
             else
                 return root
             end
@@ -111,10 +114,17 @@ class Parser
     end
 
     def response
-        resp = expect(ResponseToken).lexeme
-        grp = group()
+        tok = @tokens.last_token
+        if accept(IdentifierToken)
+            expect(OpToken, '=')
+            rest = expression()
 
-        return ResponseNode.new(resp, grp)
+            return SetResponseNode.new(tok.lexeme, rest)
+        elsif accept(ResponseToken)
+            grp = group()
+
+            return ResponseNode.new(tok.lexeme, grp)
+        end
     end
 
     def block
@@ -237,5 +247,16 @@ class ResponseNode < Node
 
     def perform(context, message, room, bot)
         Responses.respond(@name, @expression.perform(context), message, room, bot)
+    end
+end
+
+class SetResponseNode < Node
+    def initialize(name, exp)
+        @name = name
+        @expression = exp
+    end
+
+    def perform(context, message, room, bot)
+        context.variables[@name] = @expression.perform(context)
     end
 end
