@@ -76,9 +76,9 @@ class Room
     # Send a message in the room
     def send_message(content, parent=nil)
         if parent
-            @connection.send_data(make_packet("send", {"content" => content, "parent" => parent}))
+            @connection.send_data(make_packet("send", {"content" => content.to_s, "parent" => parent}))
         else
-            @connection.send_data(make_packet("send", {"content" => content}))
+            @connection.send_data(make_packet("send", {"content" => content.to_s}))
         end
     end
 
