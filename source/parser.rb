@@ -55,8 +55,6 @@ class Parser
             else
                 return VariableNode.new(tok.lexeme)
             end
-        else
-            return NilNode.new
         end
     end
 
@@ -94,15 +92,15 @@ class Parser
     end
 
     def group
-        parts = [expression()]
+        parts = []
         loop do
-            if accept(SeperatorToken)
+            if parts.length == 0 or accept(SeperatorToken)
                 parts << expression()
             else
                 break
             end
         end
-        return MultiNode.new(*parts)
+        return MultiNode.new(*parts.compact)
     end
 
     def trigger
@@ -157,9 +155,6 @@ end
 class Node
     def perform(context)
     end
-end
-
-class NilNode < Node
 end
 
 class RawNode < Node

@@ -94,32 +94,30 @@ class Responses
         return false
     end
 
+    def self.response_save(data, message, room, bot)
+        if data.length > 0
+            bot.group.save(data.join)
+        end
+        return false
+    end
+
+    def self.response_recover(data, message, room, bot)
+        if data.length == 0
+            bot.group.recover()
+        else
+            bot.group.recover(data.join)
+        end
+
+        return false
+    end
+
     @@advanced = {
         "log" => Responses.method(:response_log),
         "create" => Responses.method(:response_create),
-        "list" => Responses.method(:response_list)
+        "list" => Responses.method(:response_list),
+        "save" => Responses.method(:response_save),
+        "recover" => Responses.method(:response_recover)
     }
 
     @@merged = @@simple.merge(@@advanced)
 end
-
-# class SaveResponse < Response
-#     def perform(args, message, room, bot)
-#         if args.length > 0
-#             bot.group.save(args[0])
-#         end
-#         return false
-#     end
-# end
-#
-# class RecoverResponse < Response
-#     def perform(args, message, room, bot)
-#         if args.length > 0
-#             bot.group.recover(args[0])
-#         else
-#             bot.group.recover()
-#         end
-#
-#         return false
-#     end
-# end
