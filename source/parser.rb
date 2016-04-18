@@ -3,6 +3,8 @@ require_relative 'tokenizer'
 require_relative 'triggers'
 require_relative 'responses'
 
+require_relative 'util'
+
 class Parser
     def initialize(raw, atriggers=nil, aresponses=nil)
         @allowed_triggers = atriggers
@@ -63,10 +65,10 @@ class Parser
         loop do
             if accept(OpToken, '*')
                 num = factor()
-                root = ApplyNode.new(root, num) {|n1, n2, c| n1.perform(c) * n2.perform(c)}
+                root = ApplyNode.new(root, num) {|n1, n2, c| to_number(n1.perform(c)) * to_number(n2.perform(c))}
             elsif accept(OpToken, '/')
                 num = factor()
-                root = ApplyNode.new(root, num) {|n1, n2, c| n1.perform(c) / n2.perform(c)}
+                root = ApplyNode.new(root, num) {|n1, n2, c| to_number(n1.perform(c)) / to_number(n2.perform(c))}
             else
                 return root
             end
@@ -78,10 +80,10 @@ class Parser
         loop do
             if accept(OpToken, '+')
                 num = term()
-                root = ApplyNode.new(root, num) {|n1, n2, c| n1.perform(c) + n2.perform(c)}
+                root = ApplyNode.new(root, num) {|n1, n2, c| to_number(n1.perform(c)) + to_number(n2.perform(c))}
             elsif accept(OpToken, '-')
                 num = term()
-                root = ApplyNode.new(root, num) {|n1, n2, c| n1.perform(c) - n2.perform(c)}
+                root = ApplyNode.new(root, num) {|n1, n2, c| to_number(n1.perform(c)) - to_number(n2.perform(c))}
             elsif accept(OpToken, '_')
                 num = term()
                 root = ApplyNode.new(root, num) {|n1, n2, c| n1.perform(c).to_s + n2.perform(c).to_s}
