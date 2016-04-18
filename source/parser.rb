@@ -226,6 +226,11 @@ class TriggerNode < Node
                 trigdata.rmatches.to_a.each_index do |i|
                     context.variables["$#{i}"] = trigdata.rmatches[i]
                 end
+                context.variables["%time"] = message.time
+                context.variables["%ftime"] = Time.at(message.time).utc.strftime("%Y-%m-%d %H:%M:%S")
+                context.variables["%sender"] = message.sender
+                context.variables["%senderid"] = message.senderid
+                context.variables["%room"] = room.name
 
                 @resps.each do |r|
                     break if r.perform(context, message, room, bot)
@@ -234,6 +239,8 @@ class TriggerNode < Node
                 trigdata.rmatches.to_a.each_index do |i|
                     context.variables.delete("$#{i}")
                 end
+
+                context.variables.reject! {|k| k.start_with? '%'}
             end
         end
     end

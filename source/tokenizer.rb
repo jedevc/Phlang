@@ -2,7 +2,8 @@ QUOTES = ["'", '"']
 OPS = ['+', '-', '*', '/', '_', '=']
 
 DIGIT = /\d/
-IDENTICHAR = /[a-zA-Z$]/
+IDENTICHAR = /[a-zA-Z$%]/
+RIDENTICHAR = /[a-zA-Z0-9$%]/
 
 class BaseToken
     def initialize()
@@ -88,7 +89,7 @@ class Tokenizer
             @last_token = NumberToken.new(full.to_i)
         elsif IDENTICHAR =~ @last_char
             first = @last_char
-            full = first + read_while {|c| /[a-zA-Z0-9]/ =~ c}
+            full = first + read_while {|c| RIDENTICHAR =~ c}
             if full == "end"
                 @last_token = EndToken.new
             elsif @atriggers.include? full
