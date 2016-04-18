@@ -2,8 +2,8 @@ QUOTES = ["'", '"']
 OPS = ['+', '-', '*', '/', '_', '=']
 
 DIGIT = /\d/
-IDENTICHAR = /[a-zA-Z$%]/
-RIDENTICHAR = /[a-zA-Z0-9$%]/
+IDENTICHAR = /[a-zA-Z$%?]/
+RIDENTICHAR = /[a-zA-Z0-9$%?]/
 
 class BaseToken
     def initialize()

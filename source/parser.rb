@@ -19,7 +19,7 @@ class Parser
         while !accept(EOFToken)
             blocks << block()
         end
-        return MultiNode.new(*blocks)
+        return RootNode.new(*blocks)
     end
 
     private
@@ -51,7 +51,7 @@ class Parser
             return exp
         elsif accept(IdentifierToken)
             if accept(LeftParenToken)
-                fn = FunctionNode.new(tok.lexeme, expression())
+                fn = FunctionNode.new(tok.lexeme, group())
                 expect(RightParenToken)
                 return fn
             else
@@ -65,10 +65,10 @@ class Parser
         loop do
             if accept(OpToken, '*')
                 num = factor()
-                root = ApplyNode.new(root, num) {|n1, n2, c| to_number(n1.perform(c)) * to_number(n2.perform(c))}
+                root = ApplyNode.new(root, num) {|c, n1, n2| to_number(n1.perform(c)) * to_number(n2.perform(c))}
             elsif accept(OpToken, '/')
                 num = factor()
-                root = ApplyNode.new(root, num) {|n1, n2, c| to_number(n1.perform(c)) / to_number(n2.perform(c))}
+                root = ApplyNode.new(root, num) {|c, n1, n2| to_number(n1.perform(c)) / to_number(n2.perform(c))}
             else
                 return root
             end
@@ -80,13 +80,13 @@ class Parser
         loop do
             if accept(OpToken, '+')
                 num = term()
-                root = ApplyNode.new(root, num) {|n1, n2, c| to_number(n1.perform(c)) + to_number(n2.perform(c))}
+                root = ApplyNode.new(root, num) {|c, n1, n2| to_number(n1.perform(c)) + to_number(n2.perform(c))}
             elsif accept(OpToken, '-')
                 num = term()
-                root = ApplyNode.new(root, num) {|n1, n2, c| to_number(n1.perform(c)) - to_number(n2.perform(c))}
+                root = ApplyNode.new(root, num) {|c, n1, n2| to_number(n1.perform(c)) - to_number(n2.perform(c))}
             elsif accept(OpToken, '_')
                 num = term()
-                root = ApplyNode.new(root, num) {|n1, n2, c| n1.perform(c).to_s + n2.perform(c).to_s}
+                root = ApplyNode.new(root, num) {|c, n1, n2| n1.perform(c).to_s + n2.perform(c).to_s}
             else
                 return root
             end
@@ -186,7 +186,7 @@ class FunctionNode < Node
     end
 
     def perform(context)
-        return context.functions[@name].call(*@args.map{|a| a.perform(context)})
+        return context.functions[@name].call(context, *@args.map{|a| a.perform(context)})
     end
 end
 
@@ -197,7 +197,7 @@ class ApplyNode < Node
     end
 
     def perform(context)
-        return @f.call(*@values, context)
+        return @f.call(context, *@values)
     end
 end
 
@@ -208,6 +208,13 @@ class MultiNode < Node
 
     def perform(context)
         return @groups.map {|n| n.perform(context)}
+    end
+end
+
+class RootNode < MultiNode
+    def perform(context)
+        context.functions["?"] = lambda {|context, args| return args.sample}
+        super(context)
     end
 end
 
