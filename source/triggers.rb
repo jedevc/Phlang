@@ -66,6 +66,68 @@ class TimerTrigger < Trigger
     end
 end
 
+class PushTimerTrigger < Trigger
+    def initialize()
+        @ending = {}
+        @last = {}
+    end
+
+    def trigger(data, bot, &blk)
+        bot.connection_event("send-event") do |m, r|
+            message = Message.new(m)
+            reg = rmatch(data.slice(1, data.length).join, message.content)
+            if reg
+                @last[r] = [TriggerData.new(reg), message]
+                if @ending.include? r
+                    @ending[r] = Time.now + data[0].to_i
+                else
+                    add_time(r, data[0].to_i) do
+                        blk.call(@last[r][0], @last[r][1], r, bot)
+                    end
+                end
+            end
+        end
+    end
+
+    private
+    def add_time(room, delay, &blk)
+        @ending[room] = Time.now + delay
+        room.timer.onevent(@ending[room]) do
+            if @ending[room] < Time.now
+                blk.call()
+                @ending.delete(room)
+            else
+                add_time(room, @ending[room] - Time.now, &blk)
+            end
+        end
+    end
+end
+
+class EveryTrigger < Trigger
+    def initialize()
+        @counts = {}
+    end
+
+    def trigger(data, bot, &blk)
+        bot.connection_event("send-event") do |m, r|
+            message = Message.new(m)
+            reg = rmatch(data.slice(1, data.length).join, message.content)
+            if reg
+                if @counts.include? r
+                    @counts[r] += 1
+                else
+                    @counts[r] = 1
+                end
+            end
+
+            if @counts.include? r and @counts[r] >= data[0].to_i
+                blk.call(TriggerData.new(reg), message, r, bot)
+                @counts.delete(r)
+            end
+        end
+    end
+end
+
 class Triggers
     public
     def self.trigger(rtype)
@@ -81,78 +143,9 @@ class Triggers
         "msg" => MsgTrigger.method(:new),
         "receive" => BroadcastTrigger.method(:new),
         "timer" => TimerTrigger.method(:new),
-        # "ptimer" => Trigger.method(:new),
-        # "every" => Trigger.method(:new)
+        "ptimer" => PushTimerTrigger.method(:new),
+        "every" => EveryTrigger.method(:new)
     }
 
     @@merged = @@simple
 end
-
-# class PushTimerTrigger < Trigger
-#     def initialize(*args)
-#         super(*args)
-#         @ending = {}
-#         @last = {}
-#     end
-#
-#     public
-#     def add(bot, response)
-#         bot.connection_event("send-event") do |m, r|
-#             trigger(response, Message.new(m), r, bot)
-#         end
-#     end
-#
-#     def perform(response, args, message, room, bot)
-#         reg = rmatch(args.slice(1, args.length).join, message.content)
-#         if reg
-#             if @ending.include?(room)
-#                 @ending[room] = Time.now + args[0].to_i
-#                 @last[room] = message
-#             else
-#                 add_time(room, args[0].to_i) do
-#                     response.call(reg, @last[room], room, bot)
-#                 end
-#                 @last[room] = message
-#             end
-#         end
-#     end
-#
-#     private
-#     def add_time(room, delay, &blk)
-#         @ending[room] = Time.now + delay
-#         room.timer.onevent(@ending[room]) do
-#             if @ending[room] < Time.now
-#                 blk.call()
-#                 @ending.delete(room)
-#             else
-#                 add_time(room, @ending[room] - Time.now, &blk)
-#             end
-#         end
-#     end
-# end
-#
-# class EveryTrigger < Trigger
-#     def initialize(*args)
-#         super(*args)
-#
-#         @counts = 0
-#     end
-#
-#     def add(bot, response)
-#         bot.connection_event("send-event") do |m, r|
-#             trigger(response, Message.new(m), r, bot)
-#         end
-#     end
-#
-#     def perform(response, args, message, room, bot)
-#         reg = rmatch(args.slice(1, args.length).join, message.content)
-#         if reg
-#             @counts += 1
-#         end
-#
-#         if @counts >= args[0].to_i
-#             response.call(reg, message, room, bot)
-#             @counts = 0
-#         end
-#     end
-# end
