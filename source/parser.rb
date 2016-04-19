@@ -232,6 +232,8 @@ end
 class TriggerNode < Node
     def initialize(name, exp)
         @name = name
+        @trig = Triggers.trigger(@name)
+
         @expression = exp
         @resps = []
     end
@@ -242,7 +244,7 @@ class TriggerNode < Node
 
     def perform(context)
         context.triggers << lambda do |bot|
-            Triggers.trigger(@name, @expression.perform(context), bot) do |trigdata, message, room, bot|
+            @trig.trigger(@expression.perform(context), bot) do |trigdata, message, room, bot|
                 trigdata.rmatches.to_a.each_index do |i|
                     context.variables["$#{i}"] = trigdata.rmatches[i]
                 end
@@ -269,11 +271,14 @@ end
 class ResponseNode < Node
     def initialize(name, exp)
         @name = name
+        @resp = Responses.response(@name)
+
         @expression = exp
     end
 
     def perform(context, message, room, bot)
-        return Responses.respond(@name, @expression.perform(context), message, room, bot)
+        return true if bot.paused? room
+        return @resp.response(@expression.perform(context), message, room, bot)
     end
 end
 

@@ -3,24 +3,13 @@ require_relative 'logservice'
 require_relative 'phlangbot'
 require_relative 'room'
 
-class Responses
-    def self.respond(rtype, data, message, room, bot)
-        if bot.paused? room
-            return false
-        else
-            return @@merged[rtype].call(data, message, room, bot)
-        end
+class Response
+    def response(data, message, room, bot)
     end
+end
 
-    def self.simple
-        return @@simple.keys
-    end
-    def self.advanced
-        return @@advanced.keys
-    end
-
-    private
-    def self.response_send(data, message, room, bot)
+class SendResponse < Response
+    def response(data, message, room, bot)
         data.each do |d|
             if !bot.spam(room)
                 room.send_message(d)
@@ -28,8 +17,10 @@ class Responses
         end
         return false
     end
+end
 
-    def self.response_reply(data, message, room, bot)
+class ReplyResponse < Response
+    def response(data, message, room, bot)
         data.each do |d|
             if !bot.spam(room)
                 room.send_message(d, message.id)
@@ -37,34 +28,34 @@ class Responses
         end
         return false
     end
+end
 
-    def self.response_broadcast(data, message, room, bot)
+class BroadcastResponse < Response
+    def response(data, message, room, bot)
         data.each do |d|
             room.broadcast.trigger(d)
         end
         return false
     end
+end
 
-    def self.response_nick(data, message, room, bot)
+class NickResponse < Response
+    def response(data, message, room, bot)
         if !bot.spam(room)
             room.send_nick(data[-1])
         end
         return false
     end
+end
 
-    def self.response_breakif(data, message, room, bot)
+class BreakifResponse < Response
+    def response(data, message, room, bot)
         return data.length == 2 && data[0].to_s == data[1].to_s
     end
+end
 
-    @@simple = {
-        "send" => Responses.method(:response_send),
-        "reply" => Responses.method(:response_reply),
-        "broadcast" => Responses.method(:response_broadcast),
-        "nick" => Responses.method(:response_nick),
-        "breakif" => Responses.method(:response_breakif)
-    }
-
-    def self.response_create(data, message, room, bot)
+class CreateResponse < Response
+    def response(data, message, room, bot)
         if data.length >= 2
             nick = data[0]
             code = data.slice(1, data.length).join
@@ -77,13 +68,17 @@ class Responses
         end
         return false
     end
+end
 
-    def self.response_log(data, message, room, bot)
+class LogResponse < Response
+    def response(data, message, room, bot)
         LogService.info "@#{room.nick} logged: #{data.join}"
         return false
     end
+end
 
-    def self.response_list(data, message, room, bot)
+class ListResponse < Response
+    def response(data, message, room, bot)
         msg = ""
         bot.group.each do |b|
             name = b.basename
@@ -93,15 +88,19 @@ class Responses
         room.send_message(msg, message.id)
         return false
     end
+end
 
-    def self.response_save(data, message, room, bot)
+class SaveResponse < Response
+    def response(data, message, room, bot)
         if data.length > 0
             bot.group.save(data.join)
         end
         return false
     end
+end
 
-    def self.response_recover(data, message, room, bot)
+class RecoverResponse < Response
+    def response(data, message, room, bot)
         if data.length == 0
             bot.group.recover()
         else
@@ -110,13 +109,34 @@ class Responses
 
         return false
     end
+end
+
+class Responses
+    def self.response(rtype)
+        return @@merged[rtype].call
+    end
+
+    def self.simple
+        return @@simple.keys
+    end
+    def self.advanced
+        return @@advanced.keys
+    end
+
+    @@simple = {
+        "send" => SendResponse.method(:new),
+        "reply" => ReplyResponse.method(:new),
+        "broadcast" => BroadcastResponse.method(:new),
+        "nick" => NickResponse.method(:new),
+        "breakif" => BreakifResponse.method(:new)
+    }
 
     @@advanced = {
-        "log" => Responses.method(:response_log),
-        "create" => Responses.method(:response_create),
-        "list" => Responses.method(:response_list),
-        "save" => Responses.method(:response_save),
-        "recover" => Responses.method(:response_recover)
+        "log" => LogResponse.method(:new),
+        "create" => CreateResponse.method(:new),
+        "list" => ListResponse.method(:new),
+        "save" => SaveResponse.method(:new),
+        "recover" => RecoverResponse.method(:new)
     }
 
     @@merged = @@simple.merge(@@advanced)

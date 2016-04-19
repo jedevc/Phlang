@@ -15,62 +15,74 @@ class TriggerData
     end
 end
 
+class Trigger
+    def trigger(data, bot, &blk)
+    end
+end
+
+class StartTrigger < Trigger
+    def trigger(data, bot, &blk)
+        bot.connection_event("snapshot-event") do |m, r|
+            blk.call(TriggerData.new, Message.new(), r, bot)
+        end
+    end
+end
+
+class MsgTrigger < Trigger
+    def trigger(data, bot, &blk)
+        bot.connection_event("send-event") do |m, r|
+            message = Message.new(m)
+            reg = rmatch(data.join, message.content)
+            if reg
+                blk.call(TriggerData.new(reg), message, r, bot)
+            end
+        end
+    end
+end
+
+class BroadcastTrigger < Trigger
+    def trigger(data, bot, &blk)
+        bot.broadcast_event do |m, r|
+            message = Message.new(m, "bot", nil, Time.now.to_i)
+            reg = rmatch(data.join, message.content)
+            if reg
+                blk.call(TriggerData.new(reg), message, r, bot)
+            end
+        end
+    end
+end
+
+class TimerTrigger < Trigger
+    def trigger(data, bot, &blk)
+        bot.connection_event("send-event") do |m, r|
+            message = Message.new(m)
+            reg = rmatch(data.slice(1, data.length).join, message.content)
+            if reg
+                r.timer.onevent(Time.now + data[0].to_i) do
+                    blk.call(TriggerData.new(reg), message, r, bot)
+                end
+            end
+        end
+    end
+end
+
 class Triggers
     public
-    def self.trigger(rtype, data, bot, &blk)
-        @@merged[rtype].call(data, bot, blk)
+    def self.trigger(rtype)
+        return @@merged[rtype].call
     end
 
     def self.simple
         return @@simple.keys
     end
 
-    private
-    def self.trigger_start(data, bot, callback)
-        bot.connection_event("snapshot-event") do |m, r|
-            callback.call(TriggerData.new, Message.new(), r, bot)
-        end
-    end
-
-    def self.trigger_msg(data, bot, callback)
-        bot.connection_event("send-event") do |m, r|
-            message = Message.new(m)
-            reg = rmatch(data.join, message.content)
-            if reg
-                callback.call(TriggerData.new(reg), message, r, bot)
-            end
-        end
-    end
-
-    def self.trigger_receive(data, bot, callback)
-        bot.broadcast_event do |m, r|
-            message = Message.new(m, "bot", nil, Time.now.to_i)
-            reg = rmatch(data.join, message.content)
-            if reg
-                callback.call(TriggerData.new(reg), message, r, bot)
-            end
-        end
-    end
-
-    def self.trigger_timer(data, bot, callback)
-        bot.connection_event("send-event") do |m, r|
-            message = Message.new(m)
-            reg = rmatch(data.slice(1, data.length).join, message.content)
-            if reg
-                r.timer.onevent(Time.now + data[0].to_i) do
-                    callback.call(TriggerData.new(reg), message, r, bot)
-                end
-            end
-        end
-    end
-
     @@simple = {
-        "start" => Triggers.method(:trigger_start),
-        "msg" => Triggers.method(:trigger_msg),
-        "receive" => Triggers.method(:trigger_receive),
-        "timer" => Triggers.method(:trigger_timer),
-        # "ptimer" => Triggers.method(:trigger_ptimer),
-        # "every" => Trigger.method(:trigger_every)
+        "start" => StartTrigger.method(:new),
+        "msg" => MsgTrigger.method(:new),
+        "receive" => BroadcastTrigger.method(:new),
+        "timer" => TimerTrigger.method(:new),
+        # "ptimer" => Trigger.method(:new),
+        # "every" => Trigger.method(:new)
     }
 
     @@merged = @@simple
