@@ -34,8 +34,7 @@ end
 Expressions are used in the args for triggers and responses for greater
 flexibility. You can use basic mathematical operators (```+```, ```-```,
 ```*```, and ```/```), underscores (```_```) for string concentration and
-parenthesis to control the order of operations. You can also use the ```%```
-function to access the value of a variable.
+parenthesis to control the order of operations.
 
 ```
 msg "!dosum"
@@ -43,20 +42,26 @@ reply 1 + 4 / 2 # == 3 #
 end
 ```
 
-Use single or double quotes (```'```/```"```)to wrap string literals (sometimes
-not actually required but always worth doing to prevent difficult to track down
-bugs).
+Note that all characters contained between ```#```s will be ignored by the
+interpreter.
+
+String literals are required to be wrapped in single or double quotes
+(```'```/```"```), otherwise Phlang will treat it as an identifier or a
+statement depending on the value.
+
+For triggers or responses that take multiple arguments, use a comma (```,```) to
+separate them.
 
 ### Triggers
 
-| Triggers                    | Description                                                              |
-| :-------------------------- | :----------------------------------------------------------------------- |
-| __start__                   | Triggers once when the bot is started.                                   |
-| __msg__ _regex_             | Triggers when the bot receives a message matching _regex_.               |
-| __receive__ _regex_         | Triggers when a bot receives an interbot broadcast matching _regex_.     |
-| __timer__ _delay_ _regex_   | Triggers after waiting _delay_ seconds after a message matching _regex_. |
-| __ptimer__ _delay_ _regex_  | Similar to __timer__ but multiple triggers are canceled.                 |
-| __every__ _repeats_ _regex_ | Triggers after _repeats_ messages matching _regex_.                      |
+| Triggers                     | Description                                                              |
+| :--------------------------- | :----------------------------------------------------------------------- |
+| __start__                    | Triggers once when the bot is started.                                   |
+| __msg__ _regex_              | Triggers when the bot receives a message matching _regex_.               |
+| __receive__ _regex_          | Triggers when a bot receives an interbot broadcast matching _regex_.     |
+| __timer__ _delay_, _regex_   | Triggers after waiting _delay_ seconds after a message matching _regex_. |
+| __ptimer__ _delay_, _regex_  | Similar to __timer__ but multiple triggers are canceled.                 |
+| __every__ _repeats_, _regex_ | Triggers after _repeats_ messages matching _regex_.                      |
 
 Most of the triggers accept regexes. These regexes are ruby style regexes which
 are carefully documented in the [Ruby Docs](http://ruby-doc.org/core/Regexp.html).
@@ -65,14 +70,14 @@ are carefully documented in the [Ruby Docs](http://ruby-doc.org/core/Regexp.html
 
 Here are the basic responses that can be used with Phlang.
 
-| Responses                    | Description                                              |
-| :--------------------------- | :------------------------------------------------------- |
-| __send__ _content_           | Send a root level message.                               |
-| __reply__ _content_          | Send a reply to the message that triggered the response. |
-| __broadcast__ _content_      | Broadcast an interbot message to all active bots.        |
-| __nick__ _name_              | Set the bot's nick to _name_.                            |
-| __set__ _name_ _value_       | Set variable _name_ to _value_.                          |
-| __breakif__ _first_ _second_ | Break the execution of responses if _first_ == _second_  |
+| Responses                     | Description                                              |
+| :---------------------------- | :------------------------------------------------------- |
+| __send__ _content_            | Send a root level message.                               |
+| __reply__ _content_           | Send a reply to the message that triggered the response. |
+| __broadcast__ _content_       | Broadcast an interbot message to all active bots.        |
+| __nick__ _name_               | Set the bot's nick to _name_.                            |
+| _name_  __=__ _value_         | Set variable _name_ to _value_.                          |
+| __breakif__ _first_, _second_ | Break the execution of responses if _first_ == _second_  |
 
 If you are hosting your bots locally, there are several more responses that you
 can use that are disabled in the metabot version of Phlang for security reasons.
@@ -85,32 +90,35 @@ can use that are disabled in the metabot version of Phlang for security reasons.
 | __save__ _snapname_      | Save a snapshot of all the currently active bots. |
 | __recover__ _snapname_   | Load a snapshot of bots.                          |
 
-There are also a set of variables and functions which can be used within
-expressions for responses.
+There are also a set of variables which can be used within expressions for
+responses.
 
-| Function       | Description                                        |
-| :------------- | :------------------------------------------------- |
-| ```$(Int)```   | Get the match group from the regex in the trigger. |
-| ```?(*Args)``` | Pick an item randomly from the available args.     |
+| Variable        | Description                                                  |
+| :-------------- | :----------------------------------------------------------- |
+| ```$n```        | Get the nth match from the regex.                            |
+| ```%time```     | Get the triggered time formatted as seconds since the epoch. |
+| ```%ftime```    | Get the triggered time formatted nicely.                     |
+| ```%sender```   | Get the name of the sender of the message.                   |
+| ```%senderid``` | Get the id of the sender of the message.                     |
+| ```%room```     | Get the current room name.                                   |
 
 ```
-# Randomly select one of the two args #
-msg "!rand ([\s\S]*) ([\s\S]*)"
-reply ?($(1), $(2))
+msg "!message"
+reply "Sender: @" _ %sender _ ", " _ %senderid _ "\n" _
+      "Time: " _ %ftime _ "\n" _
+      "Room: &" _ %room
 end
 ```
 
-| Variable       | Description                                                  |
-| :------------- | :----------------------------------------------------------- |
-| ```time```     | Get the triggered time formatted as seconds since the epoch. |
-| ```ftime```    | Get the triggered time formatted nicely.                     |
-| ```sender```   | Get the name of the sender of the message.                   |
-| ```senderid``` | Get the id of the sender of the message.                     |
-| ```room```     | Get the current room name.                                   |
+### Global functions/variables
+
+| Function             | Description                                   |
+| :------------------- | :-------------------------------------------- |
+| ```?(a1, a2, ...)``` | Pick an item randomly from the argument list. |
 
 ```
-msg "!whoami"
-reply "You are @" _ %(sender) _ " with an id of " _ %(senderid)
+msg "!roll"
+reply ?(1, 2, 3, 4, 5, 6)
 end
 ```
 
@@ -120,7 +128,7 @@ A bot that repeats everything after an '!echo' command:
 ```
 # EchoBot #
 msg "^!echo ([\s\S]\*)$"
-reply "You said: " _ $(1)
+reply "You said: " _ $1
 end
 ```
 
@@ -128,7 +136,15 @@ A bot that performs basic addition:
 ```
 # AddBot #
 msg "^!add (\d+) (\d+)$"
-reply $(1) _ " + " _ $(2) _ " = " _ ($(1) + $(2))
+reply $1 _ " + " _ $2 _ " = " _ ($1 + $2)
+end
+```
+
+A bot that return information about the sender.
+```
+# WhoAmIBot #
+msg "!whoami"
+reply "You are @" _ %sender _ " with an id of " _ %senderid _ "."
 end
 ```
 
