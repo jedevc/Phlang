@@ -133,7 +133,14 @@ class Parser
         trig = trigger()
         loop do
             break if accept(EndToken)
-            trig.attach(response())
+            raise "expected EndToken before EOFToken" if accept(EOFToken)
+
+            resp = response()
+            if resp.nil?
+                raise "unexpected non-response token"
+            else
+                trig.attach(resp)
+            end
         end
 
         return MultiNode.new(trig)
@@ -186,7 +193,11 @@ class FunctionNode < Node
     end
 
     def perform(context)
-        return context.functions[@name].call(context, *@args.map{|a| a.perform(context)})
+        if context.functions.include? @name
+            return context.functions[@name].call(context, *@args.map{|a| a.perform(context)})
+        else
+            return nil
+        end
     end
 end
 
