@@ -38,7 +38,7 @@ class Parser
     def expect(ttype, lex=nil)
         ret = accept(ttype, lex)
         return ret if ret
-        raise "expected #{ttype} and got #{ret.class}"
+        raise "expected #{ttype} and got #{@tokens.last_token.class}"
     end
 
     def factor
@@ -131,17 +131,20 @@ class Parser
 
     def block
         trig = trigger()
+        expect(EOLToken)
         loop do
             break if accept(EndToken)
             raise "expected EndToken before EOFToken" if accept(EOFToken)
 
             resp = response()
+            expect(EOLToken)
             if resp.nil?
                 raise "unexpected non-response token"
             else
                 trig.attach(resp)
             end
         end
+        expect(EOLToken)
 
         return MultiNode.new(trig)
     end
@@ -290,5 +293,6 @@ class SetResponseNode < Node
 
     def perform(context, message, room, bot)
         context.variables[@name] = @expression.perform(context)
+        return false
     end
 end

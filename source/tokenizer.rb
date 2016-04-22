@@ -25,7 +25,10 @@ class RightParenToken < BaseToken
 end
 class SeperatorToken < BaseToken
 end
+
 class EndToken < BaseToken
+end
+class EOLToken < BaseToken
 end
 class EOFToken < BaseToken
 end
@@ -63,10 +66,21 @@ class Tokenizer
     public
     def next_token()
         if @last_char.nil?
-            @last_token = EOFToken.new()
+            if @last_token.class == EOLToken or @last_token.class == EOFToken
+                @last_token = EOFToken.new()
+            else
+                @last_token = EOLToken.new()
+            end
+        elsif @last_char == "\n" or @last_char == ";"
+            next_char()
+            if @last_token.class == EOLToken
+                return next_token()
+            else
+                @last_token = EOLToken.new()
+            end
         elsif /\s/ =~ @last_char
             next_char()
-            next_token()
+            return next_token()
         elsif @last_char == '('
             @last_token = LeftParenToken.new
             next_char()
