@@ -11,9 +11,8 @@ end
 class SendResponse < Response
     def response(data, message, room, bot)
         data.each do |d|
-            if !bot.spam(room)
-                room.send_message(d)
-            end
+            break if bot.spam(room)
+            room.send_message(d)
         end
         return false
     end
@@ -22,9 +21,8 @@ end
 class ReplyResponse < Response
     def response(data, message, room, bot)
         data.each do |d|
-            if !bot.spam(room)
-                room.send_message(d, message.id)
-            end
+            break if bot.spam(room)
+            room.send_message(d, message.id)
         end
         return false
     end
