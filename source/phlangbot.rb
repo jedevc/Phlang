@@ -30,8 +30,6 @@ class PhlangBot < Bot
         load_code(code)
         info_commands() if @config.builtins.info
         connection_event("send-event") {|m, r| @has_responded[r] = false} # Reset responses
-
-        @variables = {}
     end
 
     public
@@ -51,14 +49,6 @@ class PhlangBot < Bot
             bot.add_room(Room.new(r))
         end
         return bot
-    end
-
-    # Get the variables for a specific room
-    def variables(room)
-        if !@variables.has_key?(room.name)
-            @variables[room.name] = {}
-        end
-        return @variables[room.name]
     end
 
     # Pause a room
@@ -132,7 +122,6 @@ class PhlangBot < Bot
                 remove_room(room)
 
                 pause(room, false)
-                @variables.delete(room)
 
                 if room_names.length == 0
                     @group.remove(self)
