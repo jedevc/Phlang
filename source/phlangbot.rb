@@ -27,7 +27,7 @@ class PhlangBot < Bot
 
         admin_commands() if @config.builtins.admin
         util_commands() if @config.builtins.util
-        load_code(Parser.new(code, @config.allowed_triggers, @config.allowed_responses).parse())
+        load_code(code)
         info_commands() if @config.builtins.info
         connection_event("send-event") {|m, r| @has_responded[r] = false} # Reset responses
 
@@ -100,12 +100,20 @@ class PhlangBot < Bot
     end
 
     private
-    # Load code from blocks of code
-    def load_code(root)
-        context = ExecutionContext.new
-        root.perform(context)
-        context.triggers.each do |trig|
-            trig.call(self)
+    # Load triggers from code
+    def load_code(code)
+        begin
+            root = Parser.new(code, @config.allowed_triggers, @config.allowed_responses).parse()
+        rescue RuntimeError => e
+            LogService.warn(e)
+        else
+            context = ExecutionContext.new
+
+            root.perform(context)
+
+            context.triggers.each do |trig|
+                trig.call(self)
+            end
         end
     end
 
