@@ -1,8 +1,10 @@
-require_relative 'phlangbot'
 require_relative 'botstore'
 
 class BotGroup
-    def initialize()
+    def initialize(bottype)
+        # Required for loading snapshots. Should inherit from Bot.
+        @bottype = bottype
+
         @bots = []
         @cempty = true
 
@@ -76,7 +78,7 @@ class BotGroup
         bs = []
         @store.transaction do
             @store.roots.each do |k|
-                bs.push(PhlangBot.from_h(@store[k]))
+                bs.push(@bottype.from_h(@store[k]))
             end
         end
 
