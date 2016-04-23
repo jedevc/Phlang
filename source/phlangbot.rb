@@ -20,6 +20,11 @@ class PhlangBot < Bot
         @creator = creator
         @code = code
 
+        @help = []
+        @help << "@#{name} is a bot created by '#{creator}' using Phlang."
+        @help << "@#{name} responds to !ping, help, and (possibly) !creator."
+        @help << "@#{name} may also be !pause'd, !restore'd or !kill'd." if @config.builtins.admin
+
         admin_commands() if @config.builtins.admin
         util_commands() if @config.builtins.util
         load_code(Parser.new(code, @config.allowed_triggers, @config.allowed_responses).parse())
@@ -168,12 +173,9 @@ class PhlangBot < Bot
                 if /\A!ping(?: @#{name})?\Z/.match(content)
                     room.send_message("Pong!", message["id"])
                 elsif /\A!help @#{name}\Z/.match(content)
-                    room.send_message(
-                        "@#{@basename} is a bot created by '#{@creator}' using Phlang.\n\n" \
-                        "@#{@basename} responds to !ping, !help, !kill, !pause (and !restore)." \
-                    , message["id"])
+                    room.send_message(@help.join("\n"), message["id"])
                 elsif /\A!help\Z/.match(content)
-                    room.send_message("#{@basename} is a bot created by '#{@creator}'.", message["id"])
+                    room.send_message(@help[0], message["id"])
                 elsif /\A!creator @#{name}\Z/.match(message["content"]) and @creator.length > 0
                     room.send_message(@creator, message["id"])
                 end
