@@ -22,6 +22,7 @@ class Room
         @nick = ""
 
         @connection = nil
+        @connected = false
         if room_exists?(room)
             @connection = Connection.new(room)
 
@@ -29,6 +30,7 @@ class Room
                 ping_reply(packet)
             end
             @connection.onevent("snapshot-event") do |packet|
+                @connected = true
                 ready(packet)
             end
             @connection.onevent("bounce-event") do |packet|
@@ -39,8 +41,6 @@ class Room
 
             @connection.start()
         end
-
-        @connected = false
 
         @timer = Timer.new()
         @timer.start()
@@ -61,8 +61,6 @@ class Room
 
     # Prepare things for rooms
     def ready(packet)
-        @connected = true
-
         send_nick()
     end
 

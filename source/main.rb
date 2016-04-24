@@ -27,8 +27,7 @@ def main(opts)
         end
 
         bs.each do |b|
-            r = Room.new(opts[:room], opts[:password])
-            b.add_room(r)
+            b.add_room_name(opts[:room], opts[:password])
         end
 
         sleep 1 while !bs.empty?

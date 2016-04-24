@@ -80,8 +80,8 @@ class TriggerNode < Node
     end
 
     def perform(context)
-        context.triggers << lambda do |bot|
-            @trig.trigger(@expression.perform(context), bot) do |trigdata, message, room, bot|
+        context.triggers << lambda do |room, bot|
+            @trig.trigger(@expression.perform(context), room) do |trigdata, message|
                 trigdata.rmatches.to_a.each_index do |i|
                     context.variables["$#{i}"] = trigdata.rmatches[i]
                 end
@@ -98,7 +98,6 @@ class TriggerNode < Node
                 trigdata.rmatches.to_a.each_index do |i|
                     context.variables.delete("$#{i}")
                 end
-
                 context.variables.reject! {|k| k.start_with? '%'}
             end
         end
@@ -114,8 +113,11 @@ class ResponseNode < Node
     end
 
     def perform(context, message, room, bot)
-        return true if bot.paused? room
-        return @resp.response(@expression.perform(context), message, room, bot)
+        if room.paused
+            return true
+        else
+            return @resp.response(@expression.perform(context), message, room, bot)
+        end
     end
 end
 
@@ -126,7 +128,11 @@ class SetResponseNode < Node
     end
 
     def perform(context, message, room, bot)
-        context.variables[@name] = @expression.perform(context)
-        return false
+        if room.paused
+            return true
+        else
+            context.variables[@name] = @expression.perform(context)
+            return false
+        end
     end
 end

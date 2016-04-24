@@ -74,22 +74,4 @@ class Bot
 
         @onnew.push(blk)
     end
-
-    # Create an event for the connection
-    def connection_event(name, &blk)
-        new_room do |room|
-            room.connection.onevent(name) do |message|
-                blk.call(message, room)
-            end
-        end
-    end
-
-    # Create an event for broadcasts
-    def broadcast_event(&blk)
-        new_room do |room|
-            room.broadcast.onevent do |message|
-                blk.call(message, room)
-            end
-        end
-    end
 end

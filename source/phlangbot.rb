@@ -1,6 +1,6 @@
 require_relative 'logservice'
 
-require_relative 'room'
+require_relative 'phlangroom'
 require_relative 'bot'
 
 require_relative 'parser'
@@ -12,11 +12,6 @@ class PhlangBot < Bot
         super(name)
         @config = config
 
-        @paused = []
-        @spam = {}
-        @spam_delay = 10
-        @has_responded = {}
-
         @creator = creator
         @code = code
 
@@ -25,11 +20,15 @@ class PhlangBot < Bot
         @help << "@#{name} responds to !ping, help, and (possibly) !creator."
         @help << "@#{name} may also be !pause'd, !restore'd or !kill'd." if @config.builtins.admin
 
-        admin_commands() if @config.builtins.admin
-        util_commands() if @config.builtins.util
-        load_code(code)
-        info_commands() if @config.builtins.info
-        connection_event("send-event") {|m, r| @has_responded[r] = false} # Reset responses
+        new_room do |room|
+            admin_commands(room) if @config.builtins.admin
+            util_commands(room) if @config.builtins.util
+            load_code(code, room)
+            info_commands(room) if @config.builtins.info
+
+            # Reset responsed switch
+            room.connection.onevent("send-event") {|_| room.responded = false}
+        end
     end
 
     public
@@ -46,52 +45,18 @@ class PhlangBot < Bot
     def self.from_h(h)
         bot = PhlangBot.new(h["nick"], h["code"], PhlangBotConfig.from_h(h["config"]), h["creator"])
         h["rooms"].each do |r|
-            bot.add_room(Room.new(r))
+            bot.add_room_name(r)
         end
         return bot
     end
 
-    # Pause a room
-    def pause(room, pos=true)
-        if pos
-            @paused.push(room)
-        else
-            @paused.delete(room)
-            @spam.delete(room)
-        end
-    end
-
-    # See if a room is paused
-    def paused?(room)
-        return @paused.include? room
-    end
-
-    # Increment the spam counter
-    def spam(room, amount=1)
-        @has_responded[room] = true
-        if !@config.spam_limit.nil?
-            if !@spam.has_key? room
-                @spam[room] = amount
-                room.timer.onevent(Time.now + @spam_delay) do
-                    @spam.delete(room)
-                end
-            else
-                @spam[room] += amount
-            end
-
-            if @spam[room] >= @config.spam_limit * @spam_delay
-                room.send_message("/me has been paused (possible spam attack).")
-                pause(room)
-                return true
-            else
-                return false
-            end
-        end
+    def add_room_name(name, password=nil)
+        return add_room(PhlangRoom.new(name, password, @config.spam_limit))
     end
 
     private
     # Load triggers from code
-    def load_code(code)
+    def load_code(code, room)
         begin
             root = Parser.new(code, @config.allowed_triggers, @config.allowed_responses).parse()
         rescue RuntimeError => e
@@ -102,26 +67,24 @@ class PhlangBot < Bot
             root.perform(context)
 
             context.triggers.each do |trig|
-                trig.call(self)
+                trig.call(room, self)
             end
         end
     end
 
     # Administration commands
-    def admin_commands()
-        connection_event("send-event") do |message, room|
+    def admin_commands(room)
+        room.connection.onevent("send-event") do |message|
             name = room.nick
-            if /\A!restore @#{name}\Z/.match(message["content"]) and paused? room
-                pause(room, false)
+            if /\A!restore @#{name}\Z/.match(message["content"]) and room.paused
+                room.paused = false
                 room.send_message("/me is now restored.", message["id"])
-            elsif /\A!pause @#{name}\Z/.match(message["content"]) and !paused? room
+            elsif /\A!pause @#{name}\Z/.match(message["content"]) and !room.paused
+                room.paused = true
                 room.send_message("/me is now paused.", message["id"])
-                pause(room)
             elsif /\A!kill @#{name}\Z/.match(message["content"])
                 room.send_message("/me is exiting.", message["id"])
                 remove_room(room)
-
-                pause(room, false)
 
                 if room_names.length == 0
                     @group.remove(self)
@@ -133,13 +96,13 @@ class PhlangBot < Bot
     end
 
     # Various utility commands
-    def util_commands()
-        connection_event("send-event") do |message, room|
+    def util_commands(room)
+        room.connection.onevent("send-event") do |message|
             name = room.nick
-            if !paused? room
+            if !room.paused
                 if /\A!sendbot @#{name} &(\S+)\Z/.match(message["content"])
                     newroom = /^!sendbot @#{name} &(\S+)$/.match(message["content"])[1]
-                    if add_room(Room.new(newroom))
+                    if add_room_name(newroom)
                         room.send_message("/me has been sent to &#{newroom}.", message["id"])
                     else
                         room.send_message("/me could not find &#{newroom}.", message["id"])
@@ -153,11 +116,11 @@ class PhlangBot < Bot
     end
 
     # Information commands
-    def info_commands()
-        connection_event("send-event") do |message, room|
+    def info_commands(room)
+        room.connection.onevent("send-event") do |message|
             name = room.nick
             content = message["content"]
-            if !paused? room and !@has_responded[room]
+            if !room.paused and !room.responded
                 if /\A!ping(?: @#{name})?\Z/.match(content)
                     room.send_message("Pong!", message["id"])
                 elsif /\A!help @#{name}\Z/.match(content)
