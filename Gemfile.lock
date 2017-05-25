@@ -1,13 +1,13 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    eventmachine (1.0.9.1)
-    websocket (1.2.2)
-    websocket-eventmachine-base (1.1.1)
+    eventmachine (1.2.3)
+    websocket (1.2.4)
+    websocket-eventmachine-base (1.2.0)
       eventmachine (~> 1.0)
       websocket (~> 1.0)
       websocket-native (~> 1.0)
-    websocket-eventmachine-client (1.1.0)
+    websocket-eventmachine-client (1.2.0)
       websocket-eventmachine-base (~> 1.0)
     websocket-native (1.0.0)
 
@@ -19,4 +19,4 @@ DEPENDENCIES
   websocket-eventmachine-client
 
 BUNDLED WITH
-   1.11.2
+   1.14.6
